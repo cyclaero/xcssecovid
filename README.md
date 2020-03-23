@@ -1,9 +1,9 @@
 # xcssecovid
-Extract, curve-fit a logistic function and transpose JHU-CSSE's Covid-19 cases data by country/region
+Extract, curve-fit a logistic function and transpose JHU-CSSE's Covid-19 cases data per country/region
 
 ## Usage
 
-  1. Compile this file on either of FreeBSD, Linux or macOS:
+  1. Compile `xcssecovid.c` on either of FreeBSD, Linux or macOS:
 
      `cc -g0 -O3 -march=native xcssecovid.c -Wno-parentheses -lm -o xcssecovid`
 
@@ -23,3 +23,4 @@ Extract, curve-fit a logistic function and transpose JHU-CSSE's Covid-19 cases d
      
 ## Use cases on my BLog (German)
 Zeitreihenanalyse zur Ausbreitung von Covid-19 ausserhalb Chinas: https://obsigna.com/articles/1584931539.html
+English translation by MS-Online-Translation: https://www.translatetheweb.com/?from=de&to=en&a=https://obsigna.com/articles/1584931539.html
