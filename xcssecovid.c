@@ -94,8 +94,9 @@ static inline size_t collen(const char *col)
 
 int main(int argc, char *const argv[])
 {
-   FILE *csv, *tsv;
-   char *country = argv[1];
+   FILE  *csv, *tsv;
+   char  *country = argv[1];
+   size_t cl = strlen(country);
 
    if (*country)
       if (csv = (*(uint16_t *)argv[2] == *(uint16_t *)"-")
@@ -120,7 +121,7 @@ int main(int argc, char *const argv[])
             {
                size_t len = strlen(line);
                size_t col = collen(line);
-               if (len != col && (line = strstr(line+col+1, country)))
+               if (len != col && (line = strstr(line+col+1, country)) && line[cl] == ',')
                {
                   // skip 3 more fields (Country/Region,Lat,Long)
                   for (i = 0; i < 3; i++)
