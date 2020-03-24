@@ -120,7 +120,7 @@ int main(int argc, char *const argv[])
             {
                size_t len = strlen(line);
                size_t col = collen(line);
-               if (len != col && (line = strcasestr(line+col+1, country)))
+               if (len != col && (line = strstr(line+col+1, country)))
                {
                   // skip 3 more fields (Country/Region,Lat,Long)
                   for (i = 0; i < 3; i++)
