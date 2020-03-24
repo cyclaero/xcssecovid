@@ -106,95 +106,99 @@ int main(int argc, char *const argv[])
                    ? stdout
                    : fopen(argv[3], "w"))
          {
-            int     i;
+            int     i, m = 0, n = 0;
             char   *line;
             char    d[65536];
-            ldouble t[366];  // 2020 is a leap year - t[0] = 2020-01-01; t[365] = 2020-12-31
-            ldouble c[366];
-            ldouble l[366];
+            ldouble t[366], c[366], l[366];  // 2020 is a leap year - t[0] = 2020-01-01; t[365] = 2020-12-31
 
             // day 1 of the CSSE time series is 2020-01-22, hence day 0 is 2020-01-21, i.e. t[20]
             for (i = 0; i < 366; i++)
                t[i] = i - 20, c[i] = l[i] = NAN;
 
-            // find the line with the series of the specified country
+            // find the lines with the series of the specified country
             while (line = fgets(d, 65536, csv))
             {
                size_t len = strlen(line);
                size_t col = collen(line);
                if (len != col && (line = strcasestr(line+col+1, country)))
-                  break;   // found!
-            }
-
-
-            if (line)
-            {
-               // skip the 3 more fields (Country/Region,Lat,Long)
-               for (i = 0; i < 3; i++)
-                  line += collen(line) + 1;
-
-               // read the case numbers into the n array, starting at day 1 = index 20+1;
-               int p, q = p = 21;
-               char *chk;
-               while (*line && *line != '\n' && *line != '\r')
                {
-                  ldouble v = strtod(line, &chk);
-                  if (chk > line)
-                     c[q] = v, line = chk + 1;
-                  else
+                  // skip 3 more fields (Country/Region,Lat,Long)
+                  for (i = 0; i < 3; i++)
                      line += collen(line) + 1;
-                  q++;
-               }
 
-               if (q > p)
-               {
-                  ldouble (*model)(ldouble t, Vector A) = LogisticFunctionGen;
-
-                  int j, k;
-                  ldouble ChiSqr,
-                          A[6] = {2.0L*c[q-1], (model == LogisticFunctionGen) ? 0.2L : 5.0e-6L, 1.0L, 0.0L, 0.0L, 0.0L},
-                         dA[6] = {};
-
-                  char *funcStr = (model == LogisticFunctionGen)
-                                ? "a/(1 + exp(-b·(x - c)))"
-                                : "a·0.5/(0.5 + (a - 0.5)·exp(-b·a·(x - c)))";
-
-                  if (isfinite(ChiSqr = curveFit(q - p, &t[p], &c[p], &l[p], k = 1, A, dA, model)))
+                  // read the case numbers sum it up into the c array, starting at day 1 = index 20+1;
+                  int p, q = p = 21;
+                  char *chk;
+                  while (*line && *line != '\n' && *line != '\r')
                   {
-                     dA[0] = 0.0;
-                     if (isfinite(ChiSqr = curveFit(q - p, &t[p], &c[p], &l[p], k = 3, A, dA, model)))
+                     ldouble v = strtod(line, &chk);
+                     if (chk > line && isfinite(v))
                      {
-                        if (k <= 3)
-                           fprintf(tsv, "# Model: %s\n", funcStr);
-                        else if (k == 5)
-                           fprintf(tsv, "# Model: %s\n", funcStr);
-                        else if (k == 6)
-                           fprintf(tsv, "# Model: %s\n", funcStr);
-
-                        for (j = 0; j < k; j++)
-                           fprintf(tsv, "#        %c = %9.6Lg ± %.5Lg %%\n", 'a'+j, A[j], dA[j]);
-                        fprintf(tsv, "#   ChiSqr = %9.7Lg\n", ChiSqr);
+                        if (isnan(c[q]))
+                           c[q]  = v;
+                        else
+                           c[q] += v;
+                        line = chk + 1;
                      }
                      else
-                        fprintf(tsv, "# Curve fit failed\n");
+                        line += collen(line) + 1;
+                     q++;
                   }
 
-                  // write the column header formular symbols and units.
-                  // - the formular symbol of time is 't', the unit symbol of day is 'd'
-                  // - the formular symbol of number of cases is C without a unit
-                  // - the formular symbol of the siumulated loogistic function is L without a unit
-                  fprintf(tsv, "t/d\tC\tL\n");
-                  for (i = 0; i < 366; i++)
-                     if (isfinite(c[i]))
-                        fprintf(tsv, "%.0Lf\t%.0Lf\t%.6Lf\n", t[i], c[i], l[i] = model(t[i], A));
-                     else
-                        fprintf(tsv, "%.0Lf\t*\t%.6Lf\n", t[i], l[i] = model(t[i], A));
+                  if (q > p)
+                  {
+                     if (p > m) m = p;
+                     if (q > n) n = q;
+                  }
                }
-               else
-                  fprintf(tsv, "# No values for country %s encountered.\n", country);
+            }
+
+            if (n > m)
+            {
+               ldouble (*model)(ldouble t, Vector A) = LogisticFunctionGen;
+
+               int j, k;
+               ldouble ChiSqr,
+                       A[6] = {2.0L*c[n-1], (model == LogisticFunctionGen) ? 0.2L : 5.0e-6L, 1.0L, 0.0L, 0.0L, 0.0L},
+                      dA[6] = {};
+
+               char *funcStr = (model == LogisticFunctionGen)
+                             ? "a/(1 + exp(-b·(x - c)))"
+                             : "a·0.5/(0.5 + (a - 0.5)·exp(-b·a·(x - c)))";
+
+               if (isfinite(ChiSqr = curveFit(n - m, &t[m], &c[m], &l[m], k = 1, A, dA, model)))
+               {
+                  dA[0] = 0.0;
+                  if (isfinite(ChiSqr = curveFit(n - m, &t[m], &c[m], &l[m], k = 3, A, dA, model)))
+                  {
+                     if (k <= 3)
+                        fprintf(tsv, "# Model: %s\n", funcStr);
+                     else if (k == 5)
+                        fprintf(tsv, "# Model: %s\n", funcStr);
+                     else if (k == 6)
+                        fprintf(tsv, "# Model: %s\n", funcStr);
+
+                     for (j = 0; j < k; j++)
+                        fprintf(tsv, "#        %c = %9.6Lg ± %.5Lg %%\n", 'a'+j, A[j], dA[j]);
+                     fprintf(tsv, "#   ChiSqr = %9.7Lg\n", ChiSqr);
+                  }
+                  else
+                     fprintf(tsv, "# Curve fit failed\n");
+               }
+
+               // write the column header formular symbols and units.
+               // - the formular symbol of time is 't', the unit symbol of day is 'd'
+               // - the formular symbol of number of cases is C without a unit
+               // - the formular symbol of the siumulated loogistic function is L without a unit
+               fprintf(tsv, "t/d\tC\tL\n");
+               for (i = 0; i < 366; i++)
+                  if (isfinite(c[i]))
+                     fprintf(tsv, "%.0Lf\t%.0Lf\t%.6Lf\n", t[i], c[i], l[i] = model(t[i], A));
+                  else
+                     fprintf(tsv, "%.0Lf\t*\t%.6Lf\n", t[i], l[i] = model(t[i], A));
             }
             else
-               fprintf(tsv, "# No data for country %s found.\n", country);
+               fprintf(tsv, "# No values for country %s encountered.\n", country);
 
             if (tsv != stdout)
                fclose(tsv);
@@ -208,178 +212,17 @@ int main(int argc, char *const argv[])
 }
 
 
-// LU decomposition
-ldouble LUdcmp(int m, Matrix A, Matrix LU, Index idx)
-{
-   int    i, j, k, imax = 0;
-   ldouble max, sum, dum, d;
-   Vector V = calloc(m, sizeof(ldouble));
-
-   if (LU != A)
-      for (i = 0; i < m; i++)
-         for (j = 0; j < m; j++)
-            LU[i][j] = A[i][j];
-
-   for (i = 0; i < m; i++)
-   {
-      max = 0.0L;
-      for (j = 0; j < m; j++)
-         if ((dum = fabsl(LU[i][j])) > max)
-            max = dum;
-
-      if (max != 0.0L)
-         V[i] = 1.0L/max;
-      else
-      {
-         free(V);
-         return NAN;
-      }
-   }
-
-   d = 1.0L;
-   for (j = 0; j < m; j++)
-   {
-      for (i = 0; i < j; i++)
-      {
-         sum = LU[i][j];
-         for (k = 0; k < i; k++)
-            sum -= LU[i][k]*LU[k][j];
-         LU[i][j] = sum;
-      }
-
-      max = 0.0L;
-      for (; i < m; i++)
-      {
-         sum = LU[i][j];
-         for (k = 0; k < j; k++)
-            sum -= LU[i][k]*LU[k][j];
-         LU[i][j] = sum;
-
-         if ((dum = V[i]*fabsl(sum)) >= max)
-         {
-            max = dum;
-            imax = i;
-         }
-      }
-
-      if (j != imax)
-      {
-         for (k = 0; k < m; k++)
-         {
-            dum = LU[imax][k];
-            LU[imax][k] = LU[j][k];
-            LU[j][k] = dum;
-         }
-         V[imax] = V[j];
-         d = -d;
-      }
-      idx[j] = imax;
-
-      if (LU[j][j] == 0.0L)
-         LU[j][j] = __LDBL_EPSILON__;
-
-      if (j < m-1)
-      {
-         dum = 1.0L/LU[j][j];
-         for (i = j+1; i < m; i++)
-            LU[i][j] *= dum;
-      }
-   }
-
-   free(V);
-   return d;
-}
+// Curve fitting using the Levenberg–Marquardt least squares minimization algorithm
+// https://en.wikipedia.org/wiki/Levenberg–Marquardt_algorithm
+//
+// GNU Octave's leasqr() function should give (almost) the same reseuls
+// https://www.gnu.org/software/octave/
 
 
-void LUbksb(int m, Matrix LU, Index idx, Vector B, Vector X)
-{
-   int     i, j, k, l = -1;
-   ldouble sum;
-
-   if (X != B)
-      for (i = 0; i < m; i++)
-         X[i] = B[i];
-
-   for (i = 0; i < m; i++)
-   {
-      k = idx[i];
-      sum = X[k];
-      X[k] = X[i];
-      if (l >= 0)
-         for (j = l; j <= i-1; j++)
-            sum -= LU[i][j]*X[j];
-      else if (sum != 0.0L)
-         l = i;
-      X[i] = sum;
-   }
-
-   for (i = m-1; i >= 0; i--)
-   {
-      sum = X[i];
-      for (j = i+1; j < m; j++)
-         sum -= LU[i][j]*X[j];
-      X[i] = sum/LU[i][i];
-   }
-}
-
-
-void LUimpr(int m, Matrix A, Matrix LU, Index idx, Vector B, Vector X)
-{
-   int    i, j;
-   ldouble sdp;
-   Vector R = calloc(m, sizeof(ldouble));
-
-   for (i = 0; i < m; i++)
-   {
-      sdp = -B[i];
-      for (j = 0; j < m; j++)
-         sdp += A[i][j]*X[j];
-      R[i] = sdp;
-   }
-   LUbksb(m, LU, idx, R, R);
-
-   for (i = 0; i < m; i++)
-      X[i] -= R[i];
-
-   free(R);
-}
-
-
-void LUInvr(int m, Matrix A, Matrix LU, Index idx)
-{
-   int  i, j;
-   Matrix  Ai = malloc(m*sizeof(ldouble*));
-   for (j = 0; j < m; j++)
-      Ai[j] = calloc(m, sizeof(ldouble));
-
-   for (i = 0; i < m; i++)
-      Ai[i][i] = 1.0L;
-
-   for (j = 0; j < m; j++)
-      LUbksb(m, LU, idx, Ai[j], Ai[j]);
-
-   for (i = 0; i < m; i++)
-      for (j = 0; j < m; j++)
-         A[i][j] = Ai[i][j];
-
-   for (j = 0; j < m; j++)
-      free(Ai[j]);
-   free(Ai);
-}
-
-
-ldouble ERelNorm(int m, Vector B, Vector R)
-{
-   int    i;
-   ldouble sqSum = 0.0L;
-
-   for (i = 0; i < m; i++)
-      if (R[i] != 0.0L && isfinite(R[i]))
-         sqSum += sqr(B[i]/R[i]);
-      else
-         sqSum += sqr(B[i]);
-   return sqrt(sqSum);
-}
+ldouble LUdecomposition(int m, Matrix A, Matrix LU, Index idx);
+void LUbacksubstitution(int m, Matrix LU, Index idx, Vector B, Vector X);
+void LUrefinment(int m, Matrix A, Matrix LU, Index idx, Vector B, Vector X);
+void LUinversion(int m, Matrix A, Matrix LU, Index idx);
 
 
 ldouble calcChiSqr(int n, Vector T, Vector C, Vector S,
@@ -470,6 +313,18 @@ ldouble calcGradientCurvature(int n, Vector T, Vector  C,
 }
 
 
+ldouble ERelNorm(int m, Vector B, Vector R)
+{
+   int     i;
+   ldouble sqSum = 0.0L;
+
+   for (i = 0; i < m; i++)
+      if (R[i] != 0.0L && isfinite(R[i]))
+         sqSum += sqr(B[i]/R[i]);
+      else
+         sqSum += sqr(B[i]);
+   return sqrt(sqSum);
+}
 
 ldouble curveFit(int n, Vector T, Vector C, Vector S,
                 int k, Vector A, Vector dA,
@@ -478,7 +333,7 @@ ldouble curveFit(int n, Vector T, Vector C, Vector S,
    #define rtol 1.0e-9L
    #define atol 1.0e-12L
 
-   static ldouble unitvector[10] = {1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L};
+   static ldouble unitv[10] = {1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L};
 
    bool      revoke;
    int       i, j, iter = 0;
@@ -504,10 +359,10 @@ ldouble curveFit(int n, Vector T, Vector C, Vector S,
       lambda = calcGradientCurvature(n, T, C,
                                      k, A, dA, beta, alpha,
                                      lambda, model);
-      if (!isfinite(LUdcmp(k, alpha, alphaLU, idx)))
+      if (!isfinite(dRelA = LUdecomposition(k, alpha, alphaLU, idx)))
          break;
-      LUbksb(k, alphaLU, idx, unitvector, delta);
-      LUimpr(k, alpha, alphaLU, idx, unitvector, delta);
+      LUbacksubstitution(k, alphaLU, idx, unitv, delta);
+      LUrefinment(k, alpha, alphaLU, idx, unitv, delta);
 
       dRelA = ERelNorm(k, delta, A);
 
@@ -547,10 +402,10 @@ ldouble curveFit(int n, Vector T, Vector C, Vector S,
          alpha[i][i] /= (1.0 + lambda0);
       }
 
-      ldouble det = LUdcmp(k, alpha, alphaLU, idx);
+      ldouble det = LUdecomposition(k, alpha, alphaLU, idx);
       if (det != 0.0L && isfinite(det))
       {
-         LUInvr(k, alpha, alphaLU, idx);
+         LUinversion(k, alpha, alphaLU, idx);
          for (j = 0; j < k; j++)
             dA[j] = sqrtl(ChiSqr*fabsl(alpha[j][j]))*100.0L/fabsl(A[j]);
       }
@@ -570,4 +425,163 @@ ldouble curveFit(int n, Vector T, Vector C, Vector S,
    #undef atol
 
    return ChiSqr;
+}
+
+
+// LU decomposition
+// https://en.wikipedia.org/wiki/LU_decomposition
+
+ldouble LUdecomposition(int m, Matrix A, Matrix LU, Index idx)
+{
+   int    i, j, k, imax = 0;
+   ldouble max, sum, dum, d;
+   Vector V = calloc(m, sizeof(ldouble));
+
+   if (LU != A)
+      for (i = 0; i < m; i++)
+         for (j = 0; j < m; j++)
+            LU[i][j] = A[i][j];
+
+   for (i = 0; i < m; i++)
+   {
+      max = 0.0L;
+      for (j = 0; j < m; j++)
+         if ((dum = fabsl(LU[i][j])) > max)
+            max = dum;
+
+      if (max != 0.0L)
+         V[i] = 1.0L/max;
+      else
+      {
+         free(V);
+         return NAN;
+      }
+   }
+
+   d = 1.0L;
+   for (j = 0; j < m; j++)
+   {
+      for (i = 0; i < j; i++)
+      {
+         sum = LU[i][j];
+         for (k = 0; k < i; k++)
+            sum -= LU[i][k]*LU[k][j];
+         LU[i][j] = sum;
+      }
+
+      max = 0.0L;
+      for (; i < m; i++)
+      {
+         sum = LU[i][j];
+         for (k = 0; k < j; k++)
+            sum -= LU[i][k]*LU[k][j];
+         LU[i][j] = sum;
+
+         if ((dum = V[i]*fabsl(sum)) >= max)
+         {
+            max = dum;
+            imax = i;
+         }
+      }
+
+      if (j != imax)
+      {
+         for (k = 0; k < m; k++)
+         {
+            dum = LU[imax][k];
+            LU[imax][k] = LU[j][k];
+            LU[j][k] = dum;
+         }
+         V[imax] = V[j];
+         d = -d;
+      }
+      idx[j] = imax;
+
+      if (LU[j][j] == 0.0L)
+         LU[j][j] = __LDBL_EPSILON__;
+
+      if (j < m-1)
+      {
+         dum = 1.0L/LU[j][j];
+         for (i = j+1; i < m; i++)
+            LU[i][j] *= dum;
+      }
+   }
+
+   free(V);
+   return d;
+}
+
+void LUbacksubstitution(int m, Matrix LU, Index idx, Vector B, Vector X)
+{
+   int     i, j, k, l = -1;
+   ldouble sum;
+
+   if (X != B)
+      for (i = 0; i < m; i++)
+         X[i] = B[i];
+
+   for (i = 0; i < m; i++)
+   {
+      k = idx[i];
+      sum = X[k];
+      X[k] = X[i];
+      if (l >= 0)
+         for (j = l; j <= i-1; j++)
+            sum -= LU[i][j]*X[j];
+      else if (sum != 0.0L)
+         l = i;
+      X[i] = sum;
+   }
+
+   for (i = m-1; i >= 0; i--)
+   {
+      sum = X[i];
+      for (j = i+1; j < m; j++)
+         sum -= LU[i][j]*X[j];
+      X[i] = sum/LU[i][i];
+   }
+}
+
+void LUrefinment(int m, Matrix A, Matrix LU, Index idx, Vector B, Vector X)
+{
+   int    i, j;
+   ldouble sdp;
+   Vector R = calloc(m, sizeof(ldouble));
+
+   for (i = 0; i < m; i++)
+   {
+      sdp = -B[i];
+      for (j = 0; j < m; j++)
+         sdp += A[i][j]*X[j];
+      R[i] = sdp;
+   }
+   LUbacksubstitution(m, LU, idx, R, R);
+
+   for (i = 0; i < m; i++)
+      X[i] -= R[i];
+
+   free(R);
+}
+
+void LUinversion(int m, Matrix A, Matrix LU, Index idx)
+{
+   int  i, j;
+   Matrix  Ai = malloc(m*sizeof(ldouble*));
+   for (j = 0; j < m; j++)
+      Ai[j] = calloc(m, sizeof(ldouble));
+
+   for (i = 0; i < m; i++)
+      Ai[i][i] = 1.0L;
+
+   for (j = 0; j < m; j++)
+      LUbacksubstitution(m, LU, idx, Ai[j], Ai[j]);
+
+   for (i = 0; i < m; i++)
+      for (j = 0; j < m; j++)
+         A[i][j] = Ai[i][j];
+
+   for (j = 0; j < m; j++)
+      free(Ai[j]);
+   free(Ai);
 }
