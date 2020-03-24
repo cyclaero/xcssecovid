@@ -127,7 +127,7 @@ int main(int argc, char *const argv[])
                   for (i = 0; i < 3; i++)
                      line += collen(line) + 1;
 
-                  // read the case numbers sum it up into the c array, starting at day 1 = index 20+1;
+                  // read the case numbers and sum it up into the c array, starting at day 1 = index 20+1;
                   int p, q = p = 21;
                   char *chk;
                   while (*line && *line != '\n' && *line != '\r')
@@ -254,8 +254,8 @@ ldouble calcGradientCurvature(int n, Vector T, Vector  C,
                               Vector beta, Matrix alpha, ldouble lambda,
                               ldouble (*model)(ldouble t, Vector A))
 {
-   int      i, p, q, cnt = 0;
-   ldouble  ap, app, dYdA, yi;
+   int       i, p, q, cnt = 0;
+   ldouble   ap, app, dYdA, yi;
    ldouble **V = malloc(k*sizeof(ldouble*));
    for (p = 0; p < k; p++)
       V[p] = calloc(n, sizeof(ldouble));
@@ -434,9 +434,9 @@ ldouble curveFit(int n, Vector T, Vector C, Vector S,
 
 ldouble LUdecomposition(int m, Matrix A, Matrix LU, Index idx)
 {
-   int    i, j, k, imax = 0;
+   int     i, j, k, imax = 0;
    ldouble max, sum, dum, d;
-   Vector V = calloc(m, sizeof(ldouble));
+   Vector  V = calloc(m, sizeof(ldouble));
 
    if (LU != A)
       for (i = 0; i < m; i++)
@@ -546,9 +546,9 @@ void LUbacksubstitution(int m, Matrix LU, Index idx, Vector B, Vector X)
 
 void LUrefinment(int m, Matrix A, Matrix LU, Index idx, Vector B, Vector X)
 {
-   int    i, j;
+   int     i, j;
    ldouble sdp;
-   Vector R = calloc(m, sizeof(ldouble));
+   Vector  R = calloc(m, sizeof(ldouble));
 
    for (i = 0; i < m; i++)
    {
@@ -567,8 +567,8 @@ void LUrefinment(int m, Matrix A, Matrix LU, Index idx, Vector B, Vector X)
 
 void LUinversion(int m, Matrix A, Matrix LU, Index idx)
 {
-   int  i, j;
-   Matrix  Ai = malloc(m*sizeof(ldouble*));
+   int    i, j;
+   Matrix Ai = malloc(m*sizeof(ldouble*));
    for (j = 0; j < m; j++)
       Ai[j] = calloc(m, sizeof(ldouble));
 
