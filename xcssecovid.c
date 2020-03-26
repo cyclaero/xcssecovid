@@ -99,7 +99,7 @@ int main(int argc, char *const argv[])
    char  *country = argv[1];
    size_t cl = strlen(country);
 
-   if (*country)
+   if (argc == 4 && *country)
       if (csv = (*(uint16_t *)argv[2] == *(uint16_t *)"-")
                 ? stdin
                 : fopen(argv[2], "r"))
