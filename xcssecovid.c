@@ -27,14 +27,15 @@
 //
 //  Usage:
 //
-//  1. Compile this file on either of FreeBSD, Linux or macOS:
+//  1. Compile this file on either of FreeBSD, macOS or Linux:
 //
 //     cc -g0 -O3 -march=native xcssecovid.c -Wno-parentheses -lm -o xcssecovid
 //
 //  2. Download the daily updated time series of confirmed Covid-19 cases
-//     from CSSE's (at Johns Hopkins University) GitHub site CSSE COVID-19 Dataset - https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data
+//     from CSSE's (at Johns Hopkins University) GitHub site CSSE COVID-19 Dataset
+//     https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data
 //
-//     curl -O https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv
+//     fetch https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv
 //
 //  3. Extract the time series row of a given country starting on 2020-01-21 as day 0
 //     and write it out together with the country's cases and a simulated curve-fitted

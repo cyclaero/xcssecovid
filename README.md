@@ -3,7 +3,7 @@ Extract, curve-fit a logistic function and transpose JHU-CSSE's Covid-19 cases d
 
 ## Usage
 
-  1. Compile `xcssecovid.c` on either of FreeBSD, Linux or macOS:
+  1. Compile `xcssecovid.c` on either of FreeBSD, macOS or Linux:
 
      `cc -g0 -O3 -march=native xcssecovid.c -Wno-parentheses -lm -o xcssecovid`
 
