@@ -26,6 +26,7 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
 `./xcssecovid -h`
 
     Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country - Copyright Dr. Rolf Jansen (c) 2020 - Version 1.0.1
+    
     Usage: xcssecovid [-a<0-9> value] [-f (0-9)+] [-m model] [-e] [-r] [-s] [-o day#] [-z day#] [-h|-?|?] <Country> <CSV Input file> <TSV Output File>
    
        -a<0..9> value      Optionally set initial values for model's parameters the Differential Equation Solver and Curve Fitting.
