@@ -199,7 +199,7 @@ deq_error ODEInt(int m, ldouble t1, ldouble t2, ldouble *Y, ldouble *A, odeset m
 }
 
 
-#pragma mark ••• Durve Fitting by Levenberg–Marquardt least squares minimization •••
+#pragma mark ••• Curve Fitting by Levenberg–Marquardt least squares minimization •••
 // https://en.wikipedia.org/wiki/Levenberg–Marquardt_algorithm
 
 ldouble calcChiSqr(int n, ldouble *T, ldouble *Y,
@@ -405,7 +405,7 @@ ldouble curveFit(int n, ldouble *T, ldouble *Y,
 }
 
 
-#pragma mark ••• LU decomposition •••
+#pragma mark ••• LU Decomposition •••
 // https://en.wikipedia.org/wiki/LU_decomposition
 
 ldouble LUdecomposition(int m, ldouble **A, ldouble **LU, int *idx)

@@ -27,7 +27,7 @@
 //
 //  Usage:
 //
-//  1. Compile numerics.c, models.c and xcssecovid.c on either of FreeBSD, macOS:
+//  1. Compile numerics.c, models.c and xcssecovid.c on either of FreeBSD or macOS:
 //
 //     clang -g0 -O3 -march=native numerics.c models.c xcssecovid.c -Wno-parentheses -lm -o xcssecovid
 //

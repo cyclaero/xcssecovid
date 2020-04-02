@@ -55,7 +55,7 @@ typedef void (*odeset)(ldouble t, ldouble *Y, ldouble *dY, ldouble *A);
 deq_error ODEInt(int m, ldouble t0, ldouble t, ldouble *Y, ldouble *A, odeset equations);
 
 
-#pragma mark ••• Durve Fitting by Levenberg–Marquardt least squares minimization •••
+#pragma mark ••• Curve Fitting by Levenberg–Marquardt least squares minimization •••
 
 #define mpar 10
 
@@ -65,7 +65,7 @@ ldouble curveFit(int n, ldouble *T, ldouble *Y,
                  int k, ldouble *A, ldouble *dA, int *f, function curve);
 
 
-#pragma mark ••• LU decomposition •••
+#pragma mark ••• LU Decomposition •••
 
 ldouble LUdecomposition(int m, ldouble **A, ldouble **LU, int *idx);
 void LUbacksubstitution(int m, ldouble **LU, int *idx, ldouble *B, ldouble *X);
