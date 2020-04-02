@@ -68,7 +68,7 @@ int usage(const char *executable)
    while (--r >= executable && *r != '/')
       ;
    r++;
-   printf("Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country - Copyright Dr. Rolf Jansen (c) 2020 - %s\n\n", version);
+   printf("\nExtract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country - Copyright Dr. Rolf Jansen (c) 2020 - %s\n", version);
    printf("Usage: %s [-a<0-9> value] [-f (0-9)+] [-m model] [-e] [-s] [-o day#] [-z day#] [-h|-?|?] <Country> <CSV Input file> <TSV Output File>\n\n\
        -a<0..9> value      Optionally set initial values for model's parameters the Differential Equation Solver and Curve Fitting.\n\
                            The models deduce its initial parameters from the boundaries of the imported time series and by common\n\
@@ -89,7 +89,7 @@ int usage(const char *executable)
        -z day#             The day# of the last data point in the imported time series to be included for curve fitting.\n\
                            [default: last day of the imported eries].\n\n\
        -h|-?|?             Show these usage instructions.\n\n\
-       <Country>           Show these usage instructions.\n\n\
+       <Country>           Select the country for which the time series shall be processed.\n\n\
        <CSV Input file>    Path to the CSSE@JHU's Covid-19 time series CSV file.\n\n\
        <TSV Output File>   Path to the TSV output file containing the extracted and transposed time series for the given <Country>, including\n\
                            a column for a simulated time series by the given model, using the parameter as resulted from curve fitting.\n\n", r);
