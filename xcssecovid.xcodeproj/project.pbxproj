@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7E08C9AA242CFBE50083C692 /* numerics.c in Sources */ = {isa = PBXBuildFile; fileRef = 7E08C9A9242CFBE50083C692 /* numerics.c */; };
 		7E53ED8321B1A83000B22251 /* xcssecovid.c in Sources */ = {isa = PBXBuildFile; fileRef = 7E53ED8221B1A83000B22251 /* xcssecovid.c */; };
+		7EF4D911242EBE7300A5CCD1 /* models.c in Sources */ = {isa = PBXBuildFile; fileRef = 7EF4D90F242EBE7300A5CCD1 /* models.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -23,11 +25,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7E08C9A9242CFBE50083C692 /* numerics.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = numerics.c; sourceTree = "<group>"; };
+		7E08C9AB242CFBE90083C692 /* numerics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = numerics.h; sourceTree = "<group>"; };
 		7E363D0624291B15007AE640 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		7E363D0724291B15007AE640 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		7E363D0824291B15007AE640 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		7E53ED7F21B1A83000B22251 /* xcssecovid */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xcssecovid; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E53ED8221B1A83000B22251 /* xcssecovid.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xcssecovid.c; sourceTree = "<group>"; };
+		7EF4D90F242EBE7300A5CCD1 /* models.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = models.c; sourceTree = "<group>"; };
+		7EF4D910242EBE7300A5CCD1 /* models.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = models.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +50,10 @@
 		7E53ED7621B1A83000B22251 = {
 			isa = PBXGroup;
 			children = (
+				7E08C9AB242CFBE90083C692 /* numerics.h */,
+				7E08C9A9242CFBE50083C692 /* numerics.c */,
+				7EF4D910242EBE7300A5CCD1 /* models.h */,
+				7EF4D90F242EBE7300A5CCD1 /* models.c */,
 				7E53ED8221B1A83000B22251 /* xcssecovid.c */,
 				7E363D0724291B15007AE640 /* README.md */,
 				7E363D0824291B15007AE640 /* LICENSE */,
@@ -118,6 +128,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E08C9AA242CFBE50083C692 /* numerics.c in Sources */,
+				7EF4D911242EBE7300A5CCD1 /* models.c in Sources */,
 				7E53ED8321B1A83000B22251 /* xcssecovid.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -131,7 +143,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_ASSIGN_ENUM = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -147,7 +159,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				ENABLE_NS_ASSERTIONS = NO;
-				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -176,7 +188,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_ASSIGN_ENUM = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -192,7 +204,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				ENABLE_NS_ASSERTIONS = NO;
-				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;

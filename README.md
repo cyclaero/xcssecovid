@@ -1,11 +1,11 @@
 # xcssecovid
-Extract, curve-fit a logistic function and transpose JHU-CSSE's Covid-19 cases data per country/region
+Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country
 
 ## Usage
 
-  1. Compile `xcssecovid.c` on either of FreeBSD, macOS or Linux:
+  1. Compile `numerics.c`, `models.c` and `xcssecovid.c` on either of FreeBSD, macOS:
 
-     `cc -g0 -O3 -march=native xcssecovid.c -Wno-parentheses -lm -o xcssecovid`
+     `clang -g0 -O3 -march=native numerics.c models.c xcssecovid.c -Wno-parentheses -lm -o xcssecovid`
 
   2. Download the daily updated time series of confirmed Covid-19 cases
      from CSSE's (at Johns Hopkins University) GitHub site CSSE COVID-19 Dataset  

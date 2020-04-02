@@ -27,9 +27,9 @@
 //
 //  Usage:
 //
-//  1. Compile this file on either of FreeBSD, macOS or Linux:
+//  1. Compile numerics.c, models.c and xcssecovid.c on either of FreeBSD, macOS:
 //
-//     cc -g0 -O3 -march=native xcssecovid.c -Wno-parentheses -lm -o xcssecovid
+//     clang -g0 -O3 -march=native numerics.c models.c xcssecovid.c -Wno-parentheses -lm -o xcssecovid
 //
 //  2. Download the daily updated time series of confirmed Covid-19 cases
 //     from CSSE's (at Johns Hopkins University) GitHub site CSSE COVID-19 Dataset
@@ -53,34 +53,49 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include <sys/stat.h>
 
-
-typedef long double ldouble;
-typedef ldouble    *Vector;
-typedef ldouble   **Matrix;
-typedef int        *Index;
+#include "numerics.h"
+#include "models.h"
 
 
-static ldouble sqr(ldouble x)
+static const char *version = "Version 1.0.1";
+
+int usage(const char *executable)
 {
-   return x*x;
+   const char *r = executable + strlen(executable);
+   while (--r >= executable && *r != '/')
+      ;
+   r++;
+   printf("Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country - Copyright Dr. Rolf Jansen (c) 2020 - %s\n\n", version);
+   printf("Usage: %s [-a<0-9> value] [-f (0-9)+] [-m model] [-e] [-s] [-o day#] [-z day#] [-h|-?|?] <Country> <CSV Input file> <TSV Output File>\n\n\
+       -a<0..9> value      Optionally set initial values for model's parameters the Differential Equation Solver and Curve Fitting.\n\
+                           The models deduce its initial parameters from the boundaries of the imported time series and by common\n\
+                           knowledge/best educated guesses. Example: -a0 0.57 -a1 125000\n\n\
+       -f (0-9)+           Overrides the default selection of a model's parameters which take part in curve fitting, and which usually is a0, a1, a2.\n\
+                           Example: -f 1245 would lead to curve fitting against the paramters a1, a2, a4 and a5, while a0 and a would be left untouched.\n\
+                           Different models got different number of parameters, which is currently 3 to 6.\n\n\
+       -m model            Select the model for curve fitting and simulation:\n\
+                           - LF   Logistic Function -- https://en.wikipedia.org/wiki/Logistic_function\n\
+                           - LDE  Logistic Differential Equation -- https://en.wikipedia.org/wiki/Logistic_function#Logistic_differential_equation\n\
+                           - SI   Epidemiological SI-Model (basically another form of the LDE) -- https://de.wikipedia.org/wiki/SI-Modell\n\
+                           - SIR  Epidemiological SIR-Model [default] -- https://en.wikipedia.org/wiki/Mathematical_modelling_of_infectious_disease#The_SIR_model\n\n\
+       -e                  Only export the extracted and transposed time series without curve fitting and simulation of the model.\n\n\
+       -r                  Only report the model description and the values of its parameters with or without fitting, but without exporting any curve data.\n\n\
+       -s                  Simulate the model without curve fitting before.\n\n\
+       -o day#             The day# of the first data point in the imported time series to be included for curve fitting.\n\
+                           [default: first day with more than 17 cases].\n\n\
+       -z day#             The day# of the last data point in the imported time series to be included for curve fitting.\n\
+                           [default: last day of the imported eries].\n\n\
+       -h|-?|?             Show these usage instructions.\n\n\
+       <Country>           Show these usage instructions.\n\n\
+       <CSV Input file>    Path to the CSSE@JHU's Covid-19 time series CSV file.\n\n\
+       <TSV Output File>   Path to the TSV output file containing the extracted and transposed time series for the given <Country>, including\n\
+                           a column for a simulated time series by the given model, using the parameter as resulted from curve fitting.\n\n", r);
+   return 1;
 }
 
-ldouble LogisticFunctionGen(ldouble t, Vector A)
-{  // generic form: https://en.wikipedia.org/wiki/Logistic_function - parameters A[3] to A[5] = 0
-   return A[0]/(1 + exp(-A[1]*(t - A[2]))) - (A[3] + A[4]*t + A[5]*sqr(t));
-}
-
-
-ldouble LogisticFunctionAlt(ldouble t, Vector A)
-{  // alternate form: https://de.wikipedia.org/wiki/Logistische_Funktion#Weitere_Darstellungen - parameters A[3] to A[5] = 0
-   return A[0]*0.5/(0.5 + (A[0] - 0.5)*exp(-A[1]*A[0]*(t - A[2]))) - (A[3] + A[4]*t + A[5]*sqr(t));
-}
-
-ldouble curveFit(int n, Vector T, Vector C, Vector S,
-                 int k, Vector A, Vector dA,
-                 ldouble (*model)(ldouble t, Vector A));
 
 static inline size_t collen(const char *col)
 {
@@ -93,28 +108,172 @@ static inline size_t collen(const char *col)
    return l;
 }
 
+#define ndays 366    // 2020 is a leap year - t[0] = 2020-01-01; t[365] = 2020-12-31
+
 int main(int argc, char *const argv[])
 {
+   int   opc;
+   char *chk, *cmd = argv[0];
+
+   char *modelDescription = modelDescription_SIR;
+   initvals initialValues = initialValues_SIR;
+   function modelFunction = modelFunction_SIR;
+
+   bool  do_simulation = true,
+         do_curve_fit  = true,
+         export_series = true;
+
+   ldouble o = NAN, z = NAN,
+           A[mpar] = {NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN},
+          dA[mpar] = {};
+
+   int     f[mpar] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
+   bool aopt = false;
+   while ((opc = getopt(argc, argv, "af:0:1:2:3:4:5:6:7:8:9:m:erso:z:h?")) != -1)
+   {
+      char    c;
+      int     i;
+      ldouble v;
+
+      switch (opc)
+      {
+         case 'a':
+            if (aopt)
+               return usage(cmd);
+            aopt = true;
+            break;
+
+         case 'f':
+            if (optarg && *optarg)
+            {
+               for (i = 0; c = *optarg; optarg++)
+                  if ('0' <= c && c <= '9' && f[i] == -1)
+                     f[i++] = c - '0';
+                  else
+                     return usage(cmd);
+            }
+            else
+               return usage(cmd);
+            break;
+
+         case '0' ... '9':
+            if (aopt && optarg && *optarg)
+            {
+               if ('0' <= opc && opc <= '9' && isnan(A[opc -= '0'])
+                && ((v = strtold(optarg, &chk)) != 0.0L || chk != optarg)
+                && isfinite(v))
+               {
+                  A[opc] = v;
+                  aopt = false;
+               }
+               else
+                  return usage(cmd);
+            }
+            else
+               return usage(cmd);
+            break;
+
+         case 'm':
+            if (optarg && *optarg)
+               if (*(uint16_t *)optarg == *(uint16_t *)"LF" && optarg[2] == '\0')
+               {
+                  modelDescription = modelDescription_LF;
+                  initialValues = initialValues_LF;
+                  modelFunction = modelFunction_LF;
+               }
+
+               else if (*(uint32_t *)optarg == *(uint32_t *)"LDE")
+               {
+                  modelDescription = modelDescription_LF;
+                  initialValues = initialValues_LF;
+                  modelFunction = modelFunction_LF;
+               }
+
+               else if (*(uint16_t *)optarg == *(uint16_t *)"SI" && optarg[2] == '\0')
+               {
+                  modelDescription = modelDescription_SI;
+                  initialValues = initialValues_SI;
+                  modelFunction = modelFunction_SI;
+               }
+
+               else if (*(uint32_t *)optarg == *(uint32_t *)"SIR")
+                  ; // default, do nothing
+
+               else
+                  return usage(cmd);
+            else
+               return usage(cmd);
+            break;
+
+         case 'e':
+            do_simulation = false;
+            do_curve_fit  = false;
+            export_series = true;
+            break;
+
+         case 'r':
+            do_simulation = true;
+            export_series = false;
+            break;
+
+         case 's':
+            do_simulation = true;
+            do_curve_fit  = false;
+            break;
+
+         case 'o':
+            if (optarg && *optarg
+             && ((v = strtold(optarg, &chk)) != 0.0L || chk != optarg)
+             && (v < z || isnan(z)))
+               o = v;
+            else
+               return usage(cmd);
+            break;
+
+         case 'z':
+            if (optarg && *optarg
+             && ((v = strtold(optarg, &chk)) != 0.0L || chk != optarg)
+             && (v > o || isnan(o)))
+               z = v;
+            else
+               return usage(cmd);
+            break;
+
+         case 'h':
+         case '?':
+         default:
+            return usage(cmd);
+            break;
+      }
+   }
+
+   argc -= optind;
+   argv += optind;
+
+   if (argc != 3 || argc && argv[0][0] == '?' && argv[0][1] == '\0')
+      return usage(cmd);
+
    FILE  *csv, *tsv;
-   char  *country = argv[1];
+   char  *country = argv[0];
    size_t cl = strlen(country);
 
-   if (argc == 4 && *country)
-      if (csv = (*(uint16_t *)argv[2] == *(uint16_t *)"-")
+   if (*country)
+      if (csv = (*(uint16_t *)argv[1] == *(uint16_t *)"-")
                 ? stdin
-                : fopen(argv[2], "r"))
+                : fopen(argv[1], "r"))
       {
-         if (tsv = (*(uint16_t *)argv[3] == *(uint16_t *)"-")
+         if (tsv = (*(uint16_t *)argv[2] == *(uint16_t *)"-")
                    ? stdout
-                   : fopen(argv[3], "w"))
+                   : fopen(argv[2], "w"))
          {
             int     i, m = 0, n = 0;
             char   *line;
             char    d[65536];
-            ldouble t[366], c[366], l[366];  // 2020 is a leap year - t[0] = 2020-01-01; t[365] = 2020-12-31
+            ldouble t[ndays], c[ndays], l[ndays];
 
             // day 1 of the CSSE time series is 2020-01-22, hence day 0 is 2020-01-21, i.e. t[20]
-            for (i = 0; i < 366; i++)
+            for (i = 0; i < ndays; i++)
                t[i] = i - 20, c[i] = l[i] = NAN;
 
             // find the lines with the series of the specified country
@@ -155,49 +314,92 @@ int main(int argc, char *const argv[])
                }
             }
 
+
+            if (isfinite(o))
+            {
+               for (i = 0; t[i] != o && i < ndays; i++);
+               if (i < ndays && isfinite(c[i]))
+                  m = i;
+               else
+                  return usage(cmd);
+            }
+            else
+               for (; isfinite(c[m]) && c[m] < 17.0L && m < n; m++);
+
+            if (isfinite(z))
+            {
+               for (i = ndays-1; t[i] != z && i >= 0; i--);
+               if (i >= 0 && isfinite(c[i]))
+                  n = i;
+               else
+                  return usage(cmd);
+            }
+
             if (n > m)
             {
-               ldouble (*model)(ldouble t, Vector A) = LogisticFunctionGen;
+               fprintf(tsv, "# %s\n#\n", country);
 
-               int j, k;
-               ldouble ChiSqr,
-                       A[6] = {2.0L*c[n-1], (model == LogisticFunctionGen) ? 0.2L : 5.0e-6L, 1.0L, 0.0L, 0.0L, 0.0L},
-                      dA[6] = {};
-
-               char *funcStr = (model == LogisticFunctionGen)
-                             ? "a/(1 + exp(-b·(x - c)))"
-                             : "a·0.5/(0.5 + (a - 0.5)·exp(-b·a·(x - c)))";
-
-               if (isfinite(ChiSqr = curveFit(n - m, &t[m], &c[m], &l[m], k = 1, A, dA, model)))
+               if (do_simulation)
                {
-                  dA[0] = 0.0;
-                  if (isfinite(ChiSqr = curveFit(n - m, &t[m], &c[m], &l[m], k = 3, A, dA, model)))
-                  {
-                     if (k <= 3)
-                        fprintf(tsv, "# Model: %s\n", funcStr);
-                     else if (k == 5)
-                        fprintf(tsv, "# Model: %s\n", funcStr);
-                     else if (k == 6)
-                        fprintf(tsv, "# Model: %s\n", funcStr);
+                  int  j, k = initialValues(t[m], c[m], c[n-1], A, f);
+                  ldouble chiSqr = NAN;
 
-                     for (j = 0; j < k; j++)
-                        fprintf(tsv, "#        %c = %9.6Lg ± %.5Lg %%\n", 'a'+j, A[j], dA[j]);
-                     fprintf(tsv, "#   ChiSqr = %9.7Lg\n", ChiSqr);
+                  if (!do_curve_fit
+                   || isfinite(chiSqr = curveFit(n - m, &t[m], &c[m], k, A, dA, f, modelFunction)))
+                  {
+                     fprintf(tsv, "%s\n#\n", modelDescription);
+                     for (j = 0; j < mpar && isfinite(A[j]); j++)
+                        if (dA[j] != 0.0L)
+                           fprintf(tsv, "#      %c%i = %10.6Lg ± %.5Lg %%\n", 'a', j, A[j], dA[j]);
+                        else
+                           fprintf(tsv, "#      %c%i = %10.6Lg\n", 'a', j, A[j]);
+
+                     if (isfinite(chiSqr))
+                        fprintf(tsv, "#\n#  ChiSqr = %10.7Lg\n", chiSqr);
                   }
-                  else
+                  else if (do_curve_fit)
                      fprintf(tsv, "# Curve fit failed\n");
+
+                  if (export_series)
+                  {
+                     // write the column header with formular symbols and units.
+                     // - the formular symbol of time is 't', the unit symbol of day is 'd'
+                     // - the formular symbol of the number of cases is C without a unit
+                     // - the formular symbol of the siumulated model is L without a unit
+                     fprintf(tsv, "t/d\tC\tL\n");
+                     for (i = 0; i < ndays; i++)
+                     {
+                        if (i >= m)
+                           modelFunction(t[i], &l[i], A, i == m);
+                        else
+                           l[i] = 0.0L;
+
+                        if (isfinite(c[i]) && isfinite(l[i]))
+                           fprintf(tsv, "%.0Lf\t%.0Lf\t%.6Lf\n", t[i], c[i], l[i]);
+                        else if (isfinite(c[i]))
+                           fprintf(tsv, "%.0Lf\t%.6Lf\t*\n",     t[i], c[i]);
+                        else if (isfinite(l[i]))
+                           fprintf(tsv, "%.0Lf\t*\t%.6Lf\n",     t[i],       l[i]);
+                        else
+                           fprintf(tsv, "%.0Lf\t*\t*\n",         t[i]);
+                     }
+                  }
                }
 
-               // write the column header formular symbols and units.
-               // - the formular symbol of time is 't', the unit symbol of day is 'd'
-               // - the formular symbol of number of cases is C without a unit
-               // - the formular symbol of the siumulated loogistic function is L without a unit
-               fprintf(tsv, "t/d\tC\tL\n");
-               for (i = 0; i < 366; i++)
-                  if (isfinite(c[i]))
-                     fprintf(tsv, "%.0Lf\t%.0Lf\t%.6Lf\n", t[i], c[i], l[i] = model(t[i], A));
-                  else
-                     fprintf(tsv, "%.0Lf\t*\t%.6Lf\n", t[i], l[i] = model(t[i], A));
+               else
+               {
+                  // write the column header with formular symbols and units.
+                  // - the formular symbol of time is 't', the unit symbol of day is 'd'
+                  // - the formular symbol of the number of cases is C without a unit
+                  fprintf(tsv, "t/d\tC\n");
+                  for (i = 0; i < ndays; i++)
+                  {
+                     if (isfinite(c[i]))
+                        fprintf(tsv, "%.0Lf\t%.6Lf\n",t[i], c[i]);
+                     else
+                        fprintf(tsv, "%.0Lf\t*\n",    t[i]);
+                  }
+               }
             }
             else
                fprintf(tsv, "# No values for country %s encountered.\n", country);
@@ -211,379 +413,4 @@ int main(int argc, char *const argv[])
       }
 
    return 0;
-}
-
-
-// Curve fitting using the Levenberg–Marquardt least squares minimization algorithm
-// https://en.wikipedia.org/wiki/Levenberg–Marquardt_algorithm
-//
-// GNU Octave's leasqr() function should give (almost) the same reseuls
-// https://www.gnu.org/software/octave/
-
-
-ldouble LUdecomposition(int m, Matrix A, Matrix LU, Index idx);
-void LUbacksubstitution(int m, Matrix LU, Index idx, Vector B, Vector X);
-void LUrefinment(int m, Matrix A, Matrix LU, Index idx, Vector B, Vector X);
-void LUinversion(int m, Matrix A, Matrix LU, Index idx);
-
-
-ldouble calcChiSqr(int n, Vector T, Vector C, Vector S,
-                   int k, Vector A,
-                   ldouble (*model)(ldouble t, Vector A))
-{
-   int     i, cnt = -1;
-   ldouble chiSqr = 0.0L;
-
-   for (i = 0; i < n; i++)
-   {
-      S[i] = model(T[i], A);
-      chiSqr += sqr(S[i] - C[i]);
-      cnt++;
-   }
-
-   if (cnt - k > 0)
-      return chiSqr/(cnt - k);
-   else if (cnt > 0)
-      return chiSqr/cnt;
-   else
-      return NAN;
-}
-
-
-ldouble calcGradientCurvature(int n, Vector T, Vector  C,
-                              int k, Vector A, Vector dA,
-                              Vector beta, Matrix alpha, ldouble lambda,
-                              ldouble (*model)(ldouble t, Vector A))
-{
-   int       i, p, q, cnt = 0;
-   ldouble   ap, app, dYdA, yi;
-   ldouble **V = malloc(k*sizeof(ldouble*));
-   for (p = 0; p < k; p++)
-      V[p] = calloc(n, sizeof(ldouble));
-
-   for (p = 0; p < k; p++)
-   {
-      beta[p] = 0.0L;
-      for (q = 0; q < k; q++)
-         alpha[p][q] = 0.0L;
-
-      ap = A[p];
-      A[p] += dA[p];
-
-      for (i = 0; i < n; i++)
-         V[p][i] = model(T[i], A);
-
-      A[p] = ap;
-   }
-
-   for (i = 0; i < n; i++)
-   {
-      cnt++;
-      yi = model(T[i], A);
-      for (p = 0; p < k; p++)
-      {
-         dYdA = (V[p][i] - yi)/dA[p];
-         beta[p] += dYdA*(yi - C[i]);
-         for (q = 0; q <= p; q++)
-            alpha[p][q] += dYdA*(V[q][i] - yi)/dA[q];
-      }
-   }
-
-   for (p = 1; p < k; p++)
-      for (q = 0; q < p; q++)
-         alpha[q][p] = alpha[p][q];
-
-   for (p = 0; p < k; p++)
-      for (q = 0; q < k; q++)
-         alpha[p][q] /= beta[p];
-
-   if (lambda == 0.0L)
-   {
-      for (p = 0; p < k; p++)
-         if ((app = fabsl(alpha[p][p])) > lambda)
-            lambda = app;
-      lambda = sqrt(lambda)/cnt;
-   }
-
-   for (p = 0; p < k; p++)
-   {
-      alpha[p][p] *= (1.0L + lambda);
-      free(V[p]);
-   }
-   free(V);
-   return lambda;
-}
-
-
-ldouble ERelNorm(int m, Vector B, Vector R)
-{
-   int     i;
-   ldouble sqSum = 0.0L;
-
-   for (i = 0; i < m; i++)
-      if (R[i] != 0.0L && isfinite(R[i]))
-         sqSum += sqr(B[i]/R[i]);
-      else
-         sqSum += sqr(B[i]);
-   return sqrt(sqSum);
-}
-
-ldouble curveFit(int n, Vector T, Vector C, Vector S,
-                int k, Vector A, Vector dA,
-                ldouble (*model)(ldouble t, Vector A))
-{
-   #define rtol 1.0e-9L
-   #define atol 1.0e-12L
-
-   static ldouble unitv[10] = {1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L, 1.0L};
-
-   bool      revoke;
-   int       i, j, iter = 0;
-   int       badIter = 0;
-   int       idx[k];
-   ldouble   ChiSqr, ChiSqr0, dChiSqr, dRelA = NAN, lambda0 = 0.0L, lambda = 0.0L;
-   ldouble   beta[k], delta[k], B[k];
-   ldouble **alpha, **alphaLU;
-
-   alpha   = malloc(k*sizeof(ldouble *));
-   alphaLU = malloc(k*sizeof(ldouble *));
-   for (j = 0; j < k; j++)
-   {
-      dA[j]      = (A[j] != 0.0L) ? fabsl(A[j])*rtol : rtol;
-      alpha[j]   = calloc(k, sizeof(ldouble));
-      alphaLU[j] = calloc(k, sizeof(ldouble));
-   }
-
-   ChiSqr = calcChiSqr(n, T, C, S, k, A, model);
-   do
-   {
-      iter++;
-      lambda = calcGradientCurvature(n, T, C,
-                                     k, A, dA, beta, alpha,
-                                     lambda, model);
-      if (!isfinite(dRelA = LUdecomposition(k, alpha, alphaLU, idx)))
-         break;
-      LUbacksubstitution(k, alphaLU, idx, unitv, delta);
-      LUrefinment(k, alpha, alphaLU, idx, unitv, delta);
-
-      dRelA = ERelNorm(k, delta, A);
-
-      for (j = 0; j < k; j++)
-         B[j] = A[j], A[j] -= delta[j];
-
-      ChiSqr0 = ChiSqr;
-      ChiSqr  = calcChiSqr(n, T, C, S, k, A, model);
-      dChiSqr = ChiSqr - ChiSqr0;
-      revoke  = dChiSqr >= 0;
-
-      lambda0 = lambda;
-      if (!revoke)
-         lambda *= 0.2L;
-      else
-      {
-         lambda = (lambda < 100.0L) ? lambda*3.0L : 0.0L;
-         for (j = 0; j < k; j++)
-            A[j] = B[j];
-         ChiSqr = ChiSqr0;
-
-         if (dChiSqr < atol)
-            badIter++;
-         else
-            badIter = 0;
-      }
-   }
-   while (iter < 1000 && badIter < 10 && isfinite(dRelA) && (dRelA > atol && fabsl(dChiSqr) > atol || dChiSqr > 0));
-
-   if (isfinite(dRelA))
-   {
-      // extract lambda for preparation of the covarince matrix
-      for (i = 0; i < k; i++)
-      {
-         for (j = 0; j < k; j++)
-            alpha[i][j] *= beta[i];
-         alpha[i][i] /= (1.0 + lambda0);
-      }
-
-      ldouble det = LUdecomposition(k, alpha, alphaLU, idx);
-      if (det != 0.0L && isfinite(det))
-      {
-         LUinversion(k, alpha, alphaLU, idx);
-         for (j = 0; j < k; j++)
-            dA[j] = sqrtl(ChiSqr*fabsl(alpha[j][j]))*100.0L/fabsl(A[j]);
-      }
-   }
-   else
-      ChiSqr = NAN;
-
-   for (j = 0; j < k; j++)
-   {
-      free(alpha[j]);
-      free(alphaLU[j]);
-   }
-   free(alpha);
-   free(alphaLU);
-
-   #undef rtol
-   #undef atol
-
-   return ChiSqr;
-}
-
-
-// LU decomposition
-// https://en.wikipedia.org/wiki/LU_decomposition
-
-ldouble LUdecomposition(int m, Matrix A, Matrix LU, Index idx)
-{
-   int     i, j, k, imax = 0;
-   ldouble max, sum, dum, d;
-   Vector  V = calloc(m, sizeof(ldouble));
-
-   if (LU != A)
-      for (i = 0; i < m; i++)
-         for (j = 0; j < m; j++)
-            LU[i][j] = A[i][j];
-
-   for (i = 0; i < m; i++)
-   {
-      max = 0.0L;
-      for (j = 0; j < m; j++)
-         if ((dum = fabsl(LU[i][j])) > max)
-            max = dum;
-
-      if (max != 0.0L)
-         V[i] = 1.0L/max;
-      else
-      {
-         free(V);
-         return NAN;
-      }
-   }
-
-   d = 1.0L;
-   for (j = 0; j < m; j++)
-   {
-      for (i = 0; i < j; i++)
-      {
-         sum = LU[i][j];
-         for (k = 0; k < i; k++)
-            sum -= LU[i][k]*LU[k][j];
-         LU[i][j] = sum;
-      }
-
-      max = 0.0L;
-      for (; i < m; i++)
-      {
-         sum = LU[i][j];
-         for (k = 0; k < j; k++)
-            sum -= LU[i][k]*LU[k][j];
-         LU[i][j] = sum;
-
-         if ((dum = V[i]*fabsl(sum)) >= max)
-         {
-            max = dum;
-            imax = i;
-         }
-      }
-
-      if (j != imax)
-      {
-         for (k = 0; k < m; k++)
-         {
-            dum = LU[imax][k];
-            LU[imax][k] = LU[j][k];
-            LU[j][k] = dum;
-         }
-         V[imax] = V[j];
-         d = -d;
-      }
-      idx[j] = imax;
-
-      if (LU[j][j] == 0.0L)
-         LU[j][j] = __LDBL_EPSILON__;
-
-      if (j < m-1)
-      {
-         dum = 1.0L/LU[j][j];
-         for (i = j+1; i < m; i++)
-            LU[i][j] *= dum;
-      }
-   }
-
-   free(V);
-   return d;
-}
-
-void LUbacksubstitution(int m, Matrix LU, Index idx, Vector B, Vector X)
-{
-   int     i, j, k, l = -1;
-   ldouble sum;
-
-   if (X != B)
-      for (i = 0; i < m; i++)
-         X[i] = B[i];
-
-   for (i = 0; i < m; i++)
-   {
-      k = idx[i];
-      sum = X[k];
-      X[k] = X[i];
-      if (l >= 0)
-         for (j = l; j <= i-1; j++)
-            sum -= LU[i][j]*X[j];
-      else if (sum != 0.0L)
-         l = i;
-      X[i] = sum;
-   }
-
-   for (i = m-1; i >= 0; i--)
-   {
-      sum = X[i];
-      for (j = i+1; j < m; j++)
-         sum -= LU[i][j]*X[j];
-      X[i] = sum/LU[i][i];
-   }
-}
-
-void LUrefinment(int m, Matrix A, Matrix LU, Index idx, Vector B, Vector X)
-{
-   int     i, j;
-   ldouble sdp;
-   Vector  R = calloc(m, sizeof(ldouble));
-
-   for (i = 0; i < m; i++)
-   {
-      sdp = -B[i];
-      for (j = 0; j < m; j++)
-         sdp += A[i][j]*X[j];
-      R[i] = sdp;
-   }
-   LUbacksubstitution(m, LU, idx, R, R);
-
-   for (i = 0; i < m; i++)
-      X[i] -= R[i];
-
-   free(R);
-}
-
-void LUinversion(int m, Matrix A, Matrix LU, Index idx)
-{
-   int    i, j;
-   Matrix Ai = malloc(m*sizeof(ldouble*));
-   for (j = 0; j < m; j++)
-      Ai[j] = calloc(m, sizeof(ldouble));
-
-   for (i = 0; i < m; i++)
-      Ai[i][i] = 1.0L;
-
-   for (j = 0; j < m; j++)
-      LUbacksubstitution(m, LU, idx, Ai[j], Ai[j]);
-
-   for (i = 0; i < m; i++)
-      for (j = 0; j < m; j++)
-         A[i][j] = Ai[i][j];
-
-   for (j = 0; j < m; j++)
-      free(Ai[j]);
-   free(Ai);
 }
