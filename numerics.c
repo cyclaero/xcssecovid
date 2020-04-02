@@ -37,11 +37,11 @@
 
 #pragma mark ••• Bulirsch–Stoer Differential Equation Solver •••
 
-#define tol (ldexp(__DBL_EPSILON__, 22))
+#define tol (ldexp(__LDBL_EPSILON__, 21))
 
 #define nuse 7
-#define imax 11
-static int nseq[imax] = { 2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96 };
+#define imax 13
+static int nseq[imax] = { 2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 256 };
 
 void mmidpt(int m, int steps, ldouble t0, ldouble htot, ldouble *Y0, ldouble *dY, ldouble *Y, ldouble *A, odeset model)
 {
@@ -180,7 +180,7 @@ deq_error ODEInt(int m, ldouble t1, ldouble t2, ldouble *Y, ldouble *A, odeset m
       for (j = 0; j < m; j++)
          fY[j] = fabsl(Y[j]) + fabsl(h*dY[j]) + __LDBL_EPSILON__;
 
-      if ((t + h - t2)*(t + h - t1) > 0.0L)
+      if ((t + h - t2)*(t + h - t1) > __LDBL_EPSILON__)
          h = t2 - t;
 
       if (err = bsstep(m, h, &t, &hdid, &hnext, Y, dY, fY, A, model))
@@ -270,7 +270,7 @@ ldouble calcGradientCurvature(int n, ldouble *T, ldouble *Y,
       for (q = 0; q < k; q++)
          alpha[p][q] /= beta[p];
 
-   if (lambda == 0.0L)
+   if (fabsl(lambda) < __LDBL_EPSILON__)
    {
       for (p = 0; p < k; p++)
          if ((app = fabsl(alpha[p][p])) > lambda)
@@ -293,7 +293,7 @@ ldouble ERelNorm(int m, ldouble *B, ldouble *R)
    ldouble sqSum = 0.0L;
 
    for (i = 0; i < m; i++)
-      if (R[i] != 0.0L && isfinite(R[i]))
+      if (fabsl(R[i]) > __LDBL_EPSILON__ && isfinite(R[i]))
          sqSum += sqr(B[i]/R[i]);
       else
          sqSum += sqr(B[i]);
@@ -321,7 +321,7 @@ ldouble curveFit(int n, ldouble *T, ldouble *Y,
    for (j = 0; j < k; j++)
    {
        B[j]      = A[f[j]];
-      dB[j]      = (B[j] != 0.0L) ? fabsl(B[j])*rtol : rtol;
+      dB[j]      = (fabsl(B[j]) > __LDBL_EPSILON__) ? fabsl(B[j])*rtol : rtol;
       alpha[j]   = calloc(k, sizeof(ldouble));
       alphaLU[j] = calloc(k, sizeof(ldouble));
    }
@@ -380,7 +380,7 @@ ldouble curveFit(int n, ldouble *T, ldouble *Y,
       }
 
       ldouble det = LUdecomposition(k, alpha, alphaLU, idx);
-      if (det != 0.0L && isfinite(det))
+      if (fabsl(det) > __LDBL_EPSILON__ && isfinite(det))
       {
          LUinversion(k, alpha, alphaLU, idx);
          for (j = 0; j < k; j++)
@@ -426,7 +426,7 @@ ldouble LUdecomposition(int m, ldouble **A, ldouble **LU, int *idx)
          if ((dum = fabsl(LU[i][j])) > max)
             max = dum;
 
-      if (max != 0.0L)
+      if (fabsl(max) > __LDBL_EPSILON__)
          V[i] = 1.0L/max;
       else
       {
@@ -474,7 +474,7 @@ ldouble LUdecomposition(int m, ldouble **A, ldouble **LU, int *idx)
       }
       idx[j] = maxi;
 
-      if (LU[j][j] == 0.0L)
+      if (fabsl(LU[j][j]) < __LDBL_EPSILON__)
          LU[j][j] = __LDBL_EPSILON__;
 
       if (j < m-1)
@@ -506,7 +506,7 @@ void LUbacksubstitution(int m, ldouble **LU, int *idx, ldouble *B, ldouble *X)
       if (l >= 0)
          for (j = l; j <= i-1; j++)
             sum -= LU[i][j]*X[j];
-      else if (sum != 0.0L)
+      else if (fabsl(sum) > __LDBL_EPSILON__)
          l = i;
       X[i] = sum;
    }
