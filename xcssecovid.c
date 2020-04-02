@@ -69,7 +69,7 @@ int usage(const char *executable)
       ;
    r++;
    printf("\nExtract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country - Copyright Dr. Rolf Jansen (c) 2020 - %s\n", version);
-   printf("Usage: %s [-a<0-9> value] [-f (0-9)+] [-m model] [-e] [-s] [-o day#] [-z day#] [-h|-?|?] <Country> <CSV Input file> <TSV Output File>\n\n\
+   printf("Usage: %s [-a<0-9> value] [-f (0-9)+] [-m model] [-e] [-r] [-s] [-o day#] [-z day#] [-h|-?|?] <Country> <CSV Input file> <TSV Output File>\n\n\
        -a<0..9> value      Optionally set initial values for model's parameters the Differential Equation Solver and Curve Fitting.\n\
                            The models deduce its initial parameters from the boundaries of the imported time series and by common\n\
                            knowledge/best educated guesses. Example: -a0 0.57 -a1 125000\n\n\
