@@ -121,7 +121,7 @@ deq_error bsstep(int m, ldouble h, ldouble *t, ldouble *hdid, ldouble *hnext, ld
       for (i = 0; i < imax; i++)
       {
          mmidpt(m, nseq[i], *t, h, Y0, dY, Yseq, A, model);
-         rzt[i] = sqr(h/nseq[i]);
+         rzt[i] = sqrl(h/nseq[i]);
          if (i == 0)
          {
             memcpy(Y,       Yseq, m*sizeof(ldouble));
@@ -205,20 +205,18 @@ deq_error ODEInt(int m, ldouble t1, ldouble t2, ldouble *Y, ldouble *A, odeset m
 ldouble calcChiSqr(int n, ldouble *T, ldouble *Y,
                    int k, ldouble *A, function curve)
 {
-   int     i, cnt = -1;
    ldouble yi, chiSqr = 0.0L;
 
-   for (i = 0; i < n; i++)
+   for (int i = 0; i < n; i++)
    {
       curve(T[i], &yi, A, i == 0);
-      chiSqr += sqr(yi - Y[i]);
-      cnt++;
+      chiSqr += sqrl(yi - Y[i]);
    }
 
-   if (cnt - k > 0)
-      return chiSqr/(cnt - k);
-   else if (cnt > 0)
-      return chiSqr/cnt;
+   if (--n - k > 0)
+      return chiSqr/(n - k);
+   else if (n > 0)
+      return chiSqr/n;
    else
       return NAN;
 }
@@ -228,7 +226,7 @@ ldouble calcGradientCurvature(int n, ldouble *T, ldouble *Y,
                               ldouble *beta, ldouble **alpha,
                               ldouble lambda, function curve)
 {
-   int       i, p, q, cnt = 0;
+   int       i, p, q;
    ldouble   ap, app, dYdA, yi;
    ldouble **V = malloc(k*sizeof(ldouble*));
    for (p = 0; p < k; p++)
@@ -240,8 +238,7 @@ ldouble calcGradientCurvature(int n, ldouble *T, ldouble *Y,
       for (q = 0; q < k; q++)
          alpha[p][q] = 0.0L;
 
-      ap = A[f[p]];
-      A[f[p]] += dA[p];
+      ap = A[f[p]], A[f[p]] += dA[p];
 
       for (i = 0; i < n; i++)
          curve(T[i], &V[p][i], A, i == 0);
@@ -251,7 +248,6 @@ ldouble calcGradientCurvature(int n, ldouble *T, ldouble *Y,
 
    for (i = 0; i < n; i++)
    {
-      cnt++;
       curve(T[i], &yi, A, i == 0);
       for (p = 0; p < k; p++)
       {
@@ -275,7 +271,7 @@ ldouble calcGradientCurvature(int n, ldouble *T, ldouble *Y,
       for (p = 0; p < k; p++)
          if ((app = fabsl(alpha[p][p])) > lambda)
             lambda = app;
-      lambda = sqrt(lambda)/cnt;
+      lambda = sqrtl(lambda)/n;
    }
 
    for (p = 0; p < k; p++)
@@ -284,20 +280,20 @@ ldouble calcGradientCurvature(int n, ldouble *T, ldouble *Y,
       free(V[p]);
    }
    free(V);
+
    return lambda;
 }
 
 ldouble ERelNorm(int m, ldouble *B, ldouble *R)
 {
-   int     i;
    ldouble sqSum = 0.0L;
 
-   for (i = 0; i < m; i++)
-      if (fabsl(R[i]) > __LDBL_EPSILON__ && isfinite(R[i]))
-         sqSum += sqr(B[i]/R[i]);
-      else
-         sqSum += sqr(B[i]);
-   return sqrt(sqSum);
+   for (int i = 0; i < m; i++)
+      sqSum += (fabsl(R[i]) > __LDBL_EPSILON__ && isfinite(R[i]))
+             ? sqrl(B[i]/R[i])
+             : sqrl(B[i]);
+
+   return sqrtl(sqSum);
 }
 
 ldouble curveFit(int n, ldouble *T, ldouble *Y,

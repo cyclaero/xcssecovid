@@ -112,8 +112,7 @@ static inline size_t collen(const char *col)
 
 int main(int argc, char *const argv[])
 {
-   int   opc;
-   char *chk, *cmd = argv[0];
+   char *cmd = argv[0];
 
    char *modelDescription = modelDescription_SIR;
    initvals initialValues = initialValues_SIR;
@@ -123,16 +122,19 @@ int main(int argc, char *const argv[])
          do_curve_fit  = true,
          export_series = true;
 
-   ldouble o = NAN, z = NAN,
-           A[mpar] = {NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN},
+   ldouble o = NAN, z = NAN;
+
+   ldouble A[mpar] = {NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN},
           dA[mpar] = {};
 
-   int     f[mpar] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+   int     f[mpar] = {undefined, undefined, undefined, undefined, undefined,
+                      undefined, undefined, undefined, undefined, undefined};
 
    bool aopt = false;
+   int  opc;
    while ((opc = getopt(argc, argv, "af:0:1:2:3:4:5:6:7:8:9:m:erso:z:h?")) != -1)
    {
-      char    c;
+      char   *chk, c;
       int     i;
       ldouble v;
 
@@ -289,9 +291,9 @@ int main(int argc, char *const argv[])
 
                   // read the case numbers and sum it up into the c array, starting at day 1 = index 20+1;
                   int p, q = p = 21;
-                  char *chk;
                   while (*line && *line != '\n' && *line != '\r')
                   {
+                     char   *chk;
                      ldouble v = strtod(line, &chk);
                      if (chk > line && isfinite(v))
                      {
@@ -313,7 +315,6 @@ int main(int argc, char *const argv[])
                   }
                }
             }
-
 
             if (isfinite(o))
             {
@@ -341,7 +342,7 @@ int main(int argc, char *const argv[])
 
                if (do_simulation)
                {
-                  int  j, k = initialValues(t[m], c[m], c[n-1], A, f);
+                  int j, k = initialValues(t[m], c[m], c[n-1], A, f);
                   ldouble chiSqr = NAN;
 
                   if (!do_curve_fit

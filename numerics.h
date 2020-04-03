@@ -46,7 +46,7 @@ typedef enum
    active    =  1
 } tris;
 
-static inline ldouble sqr(ldouble x)
+static inline ldouble sqrl(ldouble x)
 {
    return x*x;
 }
