@@ -161,7 +161,7 @@ char *modelDescription_SIR =
 
 int initialValues_SIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
 {
-   if (isnan(A[0])) A[0] = 0.5;
+   if (isnan(A[0])) A[0] = 0.6;
    if (isnan(A[1])) A[1] = 2.0L*max;
    if (isnan(A[2])) A[2] = 1.5L*min;
    if (isnan(A[3])) A[3] = 0.4L;
