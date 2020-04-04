@@ -84,6 +84,7 @@ int usage(const char *exe)
                            - LDE  Logistic Differential Equation -- https://en.wikipedia.org/wiki/Logistic_function#Logistic_differential_equation\n\
                            - SI   Epidemiological SI-Model (basically another form of the LDE) -- https://de.wikipedia.org/wiki/SI-Modell\n\
                            - SIR  Epidemiological SIR-Model [default] -- https://en.wikipedia.org/wiki/Mathematical_modelling_of_infectious_disease#The_SIR_model\n\n\
+                           - ERF  Shifted Error Function -- (generic form)https://en.wikipedia.org/wiki/Error_function\n\
        -e                  Only export the extracted and transposed time series without curve fitting and simulation of the model.\n\n\
        -r                  Only report the model description and the values of its parameters with or without fitting, but without exporting any curve data.\n\n\
        -s                  Simulate the model without curve fitting before.\n\n\
