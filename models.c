@@ -206,7 +206,7 @@ void modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 #pragma mark ••• Shifted Error Function •••
 
 // generic form: https://en.wikipedia.org/wiki/Error_function
-// the error function is rotatation symmetrical at its inflection point at [0, 0].
+// the error function is rotational symmetrical at its inflection point at [0, 0].
 // we need to shift it up by one, in order to make it all positive.
 char *modelDescription_ERF =
 "# Model: Shifted Error Function\n"\
