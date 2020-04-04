@@ -205,6 +205,13 @@ int main(int argc, char *const argv[])
                else if (*(uint32_t *)optarg == *(uint32_t *)"SIR")
                   ; // default, do nothing
 
+               else if (*(uint16_t *)optarg == *(uint16_t *)"ERF")
+               {
+                  modelDescription = modelDescription_ERF;
+                  initialValues = initialValues_ERF;
+                  modelFunction = modelFunction_ERF;
+               }
+
                else
                   return usage(exe);
             else
