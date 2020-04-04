@@ -88,8 +88,9 @@ int usage(const char *exe)
        -e                  Only export the extracted and transposed time series without curve fitting and simulation of the model.\n\n\
        -r                  Only report the model description and the values of its parameters with or without fitting, but without exporting any curve data.\n\n\
        -s                  Simulate the model without curve fitting before.\n\n\
+       -t thresh           Threshold of minimal number of cases to include into curve fitting and simulation [default: 17].\n\
        -o day#             The day# of the first data point in the imported time series to be included for curve fitting.\n\
-                           [default: first day with more than 17 cases].\n\n\
+                           [default: first day with more than <thresh> cases].\n\n\
        -z day#             The day# of the last data point in the imported time series to be included for curve fitting.\n\
                            [default: last day of the imported eries].\n\n\
        -h|-?|?             Show these usage instructions.\n\n\
@@ -126,7 +127,9 @@ int main(int argc, char *const argv[])
          do_curve_fit  = true,
          export_series = true;
 
-   ldouble o = NAN, z = NAN;
+   ldouble thr = 17.0L,
+             o = NAN,
+             z = NAN;
 
    ldouble A[mpar] = {NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN},
           dA[mpar] = {};
@@ -136,7 +139,7 @@ int main(int argc, char *const argv[])
 
    bool aopt = false;
    int  opc;
-   while ((opc = getopt(argc, argv, "af:0:1:2:3:4:5:6:7:8:9:m:erso:z:h?")) != -1)
+   while ((opc = getopt(argc, argv, "af:0:1:2:3:4:5:6:7:8:9:m:erst:o:z:h?")) != -1)
    {
       char   *chk, c;
       int     i;
@@ -233,6 +236,13 @@ int main(int argc, char *const argv[])
          case 's':
             do_simulation = true;
             do_curve_fit  = false;
+            break;
+
+         case 't':
+            if (optarg && *optarg && (v = strtold(optarg, NULL)) > 0.0L)
+               thr = v;
+            else
+               return usage(exe);
             break;
 
          case 'o':
@@ -333,7 +343,7 @@ int main(int argc, char *const argv[])
                   return usage(exe);
             }
             else
-               for (; isfinite(c[m]) && c[m] < 17.0L && m < n; m++);
+               for (; isfinite(c[m]) && c[m] < thr && m < n; m++);
 
             if (isfinite(z))
             {
