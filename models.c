@@ -35,7 +35,7 @@
 
 #pragma mark ••• Logistic Function •••
 
-// generic form: https://en.wikipedia.org/wiki/Logistic_function
+// https://en.wikipedia.org/wiki/Logistic_function
 char *modelDescription_LF =
 "# Model: Logistic Function\n"\
 "#   y = a1/(1 + exp(-a0·(t - a2)))";
@@ -229,4 +229,32 @@ int initialValues_ERF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
 void modelFunction_ERF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 {
    *Y = 0.5*A[1]*(1 + erfl(A[0]*(t - A[2])));
+}
+
+
+#pragma mark ••• Generalized Logistic Function •••
+
+// https://en.wikipedia.org/wiki/Generalised_logistic_function
+char *modelDescription_GLF =
+"# Model: Generalised Logistic Function\n"\
+"#   y = a1/(1 + exp(-a0·(t - a2)))^(1/a3)";
+
+int initialValues_GLF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
+{
+   if (isnan(A[0])) A[0] = 0.1L;
+   if (isnan(A[1])) A[1] = 2.0L*max;
+   if (isnan(A[2])) A[2] = t1 + 20.0L;
+   if (isnan(A[3])) A[3] = 0.3;
+
+   int i, k = 0;
+   for (i = 0; i < mpar; i++)
+      if (f[i] != undefined) k++;
+   if (k == 0)
+      f[k++] = 0, f[k++] = 1, f[k++] = 2;
+   return k;
+}
+
+void modelFunction_GLF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+{
+   *Y = A[1]/powl(1 + expl(-A[0]*(t - A[2])), 1/A[3]);
 }
