@@ -236,8 +236,8 @@ int main(int argc, char *const argv[])
          case 'z':
             if (optarg && *optarg
              && ((v = strtold(optarg, &chk)) != 0.0L || chk != optarg)
-             && (v > o || isnan(o)))
-               z = v;
+             && (v >= o || isnan(o)))
+               z = v + 1.0L;
             else
                return usage(cmd);
             break;
