@@ -62,12 +62,15 @@
 
 static const char *version = "Version 1.0.1";
 
-int usage(const char *executable)
+static inline const char *execname(const char *cmd)
 {
-   const char *r = executable + strlen(executable);
-   while (--r >= executable && *r != '/')
-      ;
-   r++;
+   const char *r = cmd + strlen(cmd);
+   while (--r >= cmd && *r != '/');
+   return r + 1;
+}
+
+int usage(const char *exe)
+{
    printf("\nExtract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country - Copyright Dr. Rolf Jansen (c) 2020 - %s\n", version);
    printf("Usage: %s [-a<0-9> value] [-f (0-9)+] [-m model] [-e] [-r] [-s] [-o day#] [-z day#] [-h|-?|?] <Country> <CSV Input file> <TSV Output File>\n\n\
        -a<0..9> value      Optionally set initial values for model's parameters the Differential Equation Solver and Curve Fitting.\n\
@@ -92,7 +95,7 @@ int usage(const char *executable)
        <Country>           Select the country for which the time series shall be processed.\n\n\
        <CSV Input file>    Path to the CSSE@JHU's Covid-19 time series CSV file.\n\n\
        <TSV Output File>   Path to the TSV output file containing the extracted and transposed time series for the given <Country>, including\n\
-                           a column for a simulated time series by the given model, using the parameter as resulted from curve fitting.\n\n", r);
+                           a column for a simulated time series by the given model, using the parameter as resulted from curve fitting.\n\n", exe);
    return 1;
 }
 
@@ -112,7 +115,7 @@ static inline size_t collen(const char *col)
 
 int main(int argc, char *const argv[])
 {
-   char *cmd = argv[0];
+   const char *exe = execname(argv[0]);
 
    char *modelDescription = modelDescription_SIR;
    initvals initialValues = initialValues_SIR;
@@ -142,7 +145,7 @@ int main(int argc, char *const argv[])
       {
          case 'a':
             if (aopt)
-               return usage(cmd);
+               return usage(exe);
             aopt = true;
             break;
 
@@ -153,10 +156,10 @@ int main(int argc, char *const argv[])
                   if ('0' <= c && c <= '9' && f[i] == -1)
                      f[i++] = c - '0';
                   else
-                     return usage(cmd);
+                     return usage(exe);
             }
             else
-               return usage(cmd);
+               return usage(exe);
             break;
 
          case '0' ... '9':
@@ -170,10 +173,10 @@ int main(int argc, char *const argv[])
                   aopt = false;
                }
                else
-                  return usage(cmd);
+                  return usage(exe);
             }
             else
-               return usage(cmd);
+               return usage(exe);
             break;
 
          case 'm':
@@ -203,9 +206,9 @@ int main(int argc, char *const argv[])
                   ; // default, do nothing
 
                else
-                  return usage(cmd);
+                  return usage(exe);
             else
-               return usage(cmd);
+               return usage(exe);
             break;
 
          case 'e':
@@ -230,7 +233,7 @@ int main(int argc, char *const argv[])
              && (v < z || isnan(z)))
                o = v;
             else
-               return usage(cmd);
+               return usage(exe);
             break;
 
          case 'z':
@@ -239,35 +242,32 @@ int main(int argc, char *const argv[])
              && (v >= o || isnan(o)))
                z = v + 1.0L;
             else
-               return usage(cmd);
+               return usage(exe);
             break;
 
          case 'h':
          case '?':
          default:
-            return usage(cmd);
+            return usage(exe);
             break;
       }
    }
 
-   argc -= optind;
-   argv += optind;
-
-   if (argc != 3 || argc && argv[0][0] == '?' && argv[0][1] == '\0')
-      return usage(cmd);
+   if (argc-optind != 3 || argc && argv[optind][0] == '?' && argv[optind][1] == '\0')
+      return usage(exe);
 
    FILE  *csv, *tsv;
-   char  *country = argv[0];
+   char  *country = argv[optind];
    size_t cl = strlen(country);
 
    if (*country)
-      if (csv = (*(uint16_t *)argv[1] == *(uint16_t *)"-")
+      if (csv = (*(uint16_t *)argv[optind+1] == *(uint16_t *)"-")
                 ? stdin
-                : fopen(argv[1], "r"))
+                : fopen(argv[optind+1], "r"))
       {
-         if (tsv = (*(uint16_t *)argv[2] == *(uint16_t *)"-")
+         if (tsv = (*(uint16_t *)argv[optind+2] == *(uint16_t *)"-")
                    ? stdout
-                   : fopen(argv[2], "w"))
+                   : fopen(argv[optind+2], "w"))
          {
             int     i, m = 0, n = 0;
             char   *line;
@@ -322,7 +322,7 @@ int main(int argc, char *const argv[])
                if (i < ndays && isfinite(c[i]))
                   m = i;
                else
-                  return usage(cmd);
+                  return usage(exe);
             }
             else
                for (; isfinite(c[m]) && c[m] < 17.0L && m < n; m++);
@@ -333,12 +333,15 @@ int main(int argc, char *const argv[])
                if (i >= 0 && isfinite(c[i]))
                   n = i;
                else
-                  return usage(cmd);
+                  return usage(exe);
             }
 
             if (n > m)
             {
-               fprintf(tsv, "# %s\n#\n", country);
+               fprintf(tsv, "# %s", exe);
+               for (i = 1; i < argc; i++)
+                  fprintf(tsv, " %s", argv[i]);
+               fprintf(tsv, "\n# %s\n", country);
 
                if (do_simulation)
                {
