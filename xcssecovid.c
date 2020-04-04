@@ -380,12 +380,12 @@ int main(int argc, char *const argv[])
                      fprintf(tsv, "%s\n#\n", modelDescription);
                      for (j = 0; j < mpar && isfinite(A[j]); j++)
                         if (dA[j] != 0.0L)
-                           fprintf(tsv, "#      %c%i = %10.6Lg ± %.5Lg %%\n", 'a', j, A[j], dA[j]);
+                           fprintf(tsv, "#      %c%i = %11.6Lg ± %.5Lg %%\n", 'a', j, A[j], dA[j]);
                         else
-                           fprintf(tsv, "#      %c%i = %10.6Lg\n", 'a', j, A[j]);
+                           fprintf(tsv, "#      %c%i = %11.6Lg\n", 'a', j, A[j]);
 
                      if (isfinite(chiSqr))
-                        fprintf(tsv, "#\n#  ChiSqr = %10.7Lg\n", chiSqr);
+                        fprintf(tsv, "#\n#  ChiSqr = %11.1Lf\n", chiSqr);
                   }
                   else if (do_curve_fit)
                      fprintf(tsv, "# Curve fit failed\n");
@@ -407,7 +407,7 @@ int main(int argc, char *const argv[])
                         if (isfinite(c[i]) && isfinite(l[i]))
                            fprintf(tsv, "%.0Lf\t%.0Lf\t%.6Lf\n", t[i], c[i], l[i]);
                         else if (isfinite(c[i]))
-                           fprintf(tsv, "%.0Lf\t%.6Lf\t*\n",     t[i], c[i]);
+                           fprintf(tsv, "%.0Lf\t%.0Lf\t*\n",     t[i], c[i]);
                         else if (isfinite(l[i]))
                            fprintf(tsv, "%.0Lf\t*\t%.6Lf\n",     t[i],       l[i]);
                         else
