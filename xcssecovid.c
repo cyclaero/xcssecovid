@@ -266,7 +266,7 @@ int main(int argc, char *const argv[])
             if (optarg && *optarg
              && ((v = strtold(optarg, &chk)) != 0.0L || chk != optarg)
              && (v >= o || isnan(o)))
-               z = v + 1.0L;
+               z = v;
             else
                return usage(exe);
             break;
@@ -357,7 +357,7 @@ int main(int argc, char *const argv[])
             {
                for (i = ndays-1; t[i] != z && i >= 0; i--);
                if (i >= 0 && isfinite(c[i]))
-                  n = i;
+                  n = i + 1;
                else
                   return usage(exe);
             }
