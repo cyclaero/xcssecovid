@@ -195,9 +195,9 @@ int main(int argc, char *const argv[])
 
                else if (*(uint32_t *)optarg == *(uint32_t *)"LDE")
                {
-                  modelDescription = modelDescription_LF;
-                  initialValues = initialValues_LF;
-                  modelFunction = modelFunction_LF;
+                  modelDescription = modelDescription_LDE;
+                  initialValues = initialValues_LDE;
+                  modelFunction = modelFunction_LDE;
                }
 
                else if (*(uint16_t *)optarg == *(uint16_t *)"SI" && optarg[2] == '\0')

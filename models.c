@@ -64,7 +64,7 @@ void modelFunction_LF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
 char *modelDescription_LDE =
 "# Model: Logistic Differential Equation\n"\
-"#   dy0/dt = a0·y0·(1 - y0/a1) || y0(a3) = a2";
+"#   dy/dt = a0·y·(1 - y/a1) || y(a3) = a2";
 
 int initialValues_LDE(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
 {
@@ -83,7 +83,7 @@ int initialValues_LDE(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
 
 static void lde(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
 {
-   dY[0] = A[0]*Y[0]*(1 - Y[0]/A[1]);
+   *dY = A[0]**Y*(1 - *Y/A[1]);
 }
 
 void modelFunction_LDE(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
