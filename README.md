@@ -57,7 +57,7 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
                            [default: first day with more than 17 cases].
 
        -z day#             The day# of the last data point in the imported time series to be included for curve fitting.
-                           [default: last day of the imported eries].
+                           [default: last day of the imported series].
 
        -h|-?|?             Show these usage instructions.
 
