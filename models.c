@@ -244,7 +244,7 @@ int initialValues_GLF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
    if (isnan(A[0])) A[0] = 0.2L;
    if (isnan(A[1])) A[1] = 2.0L*max;
    if (isnan(A[2])) A[2] = t1 + 20.0L;
-   if (isnan(A[3])) A[3] = 0.25L;
+   if (isnan(A[3])) A[3] = 0.333333L;
 
    int i, k = 0;
    for (i = 0; i < mpar; i++)
