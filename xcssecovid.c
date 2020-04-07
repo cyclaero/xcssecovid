@@ -89,7 +89,7 @@ int usage(const char *exe)
        -e                  Only export the extracted and transposed time series without curve fitting and simulation of the model.\n\n\
        -r                  Only report the model description and the values of its parameters with or without fitting, but without exporting any curve data.\n\n\
        -s                  Simulate the model without curve fitting before.\n\n\
-       -t thresh           Threshold of minimal number of cases to include into curve fitting and simulation [default: 17].\n\
+       -t thresh           Threshold of minimal number of cases to include into curve fitting and simulation [default: 17].\n\n\
        -o day#             The day# of the first data point in the imported time series to be included for curve fitting.\n\
                            [default: first day with more than <thresh> cases].\n\n\
        -z day#             The day# of the last data point in the imported time series to be included for curve fitting.\n\

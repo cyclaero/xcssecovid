@@ -51,6 +51,8 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
 
        -s                  Simulate the model without curve fitting before.
 
+       -t thresh           Threshold of minimal number of cases to include into curve fitting and simulation [default: 17].
+
        -o day#             The day# of the first data point in the imported time series to be included for curve fitting.
                            [default: first day with more than 17 cases].
 
@@ -67,5 +69,5 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
                            a column for a simulated time series by the given model, using the parameter as resulted from curve fitting.
    
 ## Use cases on my BLog (German)
-Zeitreihenanalyse zur Ausbreitung von Covid-19 ausserhalb Chinas: https://obsigna.com/articles/1584931539.html
-English translation by MS-Online-Translation: https://www.translatetheweb.com/?from=de&to=en&a=https://obsigna.com/articles/1584931539.html
+Modelle zur Beschreibung der Ausbreitung des n-Coronavirus-2019: https://obsigna.com/articles/1585498285.html
+English translation by MS-Online-Translation: https://www.translatetheweb.com/?from=de&to=en&a=https://obsigna.com/articles/1585498285.html
