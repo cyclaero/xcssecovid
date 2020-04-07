@@ -29,7 +29,7 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
     
     Usage: xcssecovid [-a<0-9> value] [-f (0-9)+] [-m model] [-e] [-r] [-s] [-o day#] [-z day#] [-h|-?|?] <Country> <CSV Input file> <TSV Output File>
 
-       -a<0..9> value      Optionally set initial values for model's parameters the Differential Equation Solver and Curve Fitting.
+       -a<0..9> value      Optionally set initial values for the model's parameters the Differential Equation Solver and Curve Fitting.
                            The models deduce its initial parameters from the boundaries of the imported time series and by common
                            knowledge/best educated guesses. Example: -a0 0.57 -a1 125000
 
@@ -69,5 +69,5 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
                            a column for a simulated time series by the given model, using the parameter as resulted from curve fitting.
    
 ## Use cases on my BLog (German)
-Modelle zur Beschreibung der Ausbreitung des n-Coronavirus-2019: https://obsigna.com/articles/1585498285.html
-English translation by MS-Online-Translation: https://www.translatetheweb.com/?from=de&to=en&a=https://obsigna.com/articles/1585498285.html
+Modelle zur Beschreibung der Ausbreitung des n-Coronavirus-2019: https://obsigna.com/articles/1586103085.html
+English translation by MS-Online-Translation: https://www.translatetheweb.com/?from=de&to=en&a=https://obsigna.com/articles/1586103085.html
