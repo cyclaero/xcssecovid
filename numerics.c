@@ -342,7 +342,7 @@ ldouble curveFit(int n, ldouble *T, ldouble *Y,
       chiSqr0 = chiSqr;
       chiSqr  = calcChiSqr(n, T, Y, k, A, curve);
       dChiSqr = chiSqr - chiSqr0;
-      revoke  = dChiSqr > 0.0L;
+      revoke  = isnan(dChiSqr) || dChiSqr > 0.0L || fabsl(dChiSqr) <= __LDBL_EPSILON__;
 
       lambda0 = lambda;
       if (!revoke)

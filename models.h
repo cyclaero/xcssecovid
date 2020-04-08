@@ -42,6 +42,10 @@ extern char *modelDescription_SIR;
 int  initialValues_SIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
 void modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
 
+extern char *modelDescription_SIRX;
+int  initialValues_SIRX(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
+void modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
+
 extern char *modelDescription_ERF;
 int  initialValues_ERF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
 void modelFunction_ERF(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
