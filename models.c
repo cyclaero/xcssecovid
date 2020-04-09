@@ -163,7 +163,7 @@ int initialValues_SIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
 {
    if (isnan(A[0])) A[0] = 0.6L;
    if (isnan(A[1])) A[1] = 2.0L*max;
-   if (isnan(A[2])) A[2] = 1.5L*min;
+   if (isnan(A[2])) A[2] = 2.5L*min;
    if (isnan(A[3])) A[3] = 0.4L;
    if (isnan(A[4])) A[4] = A[3]*A[2];
    if (isnan(A[5])) A[5] = t1;
