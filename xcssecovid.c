@@ -439,6 +439,7 @@ int main(int argc, char *const argv[])
                   }
                }
             }
+
             else
                fprintf(tsv, "# No values for country %s encountered.\n", country);
 
