@@ -48,7 +48,7 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
 
        -e                  Only export the extracted and transposed time series without curve fitting and simulation of the model.
 
-       -r                  Only report the model description and the values of its parameters with or without fitting, but without exporting any curve data.
+       -i                  Only inform the model description and the values of its parameters with or without fitting, but without exporting any curve data.
 
        -s                  Simulate the model without curve fitting before.
 
@@ -59,6 +59,8 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
 
        -z day#             The day# of the last data point in the imported time series to be included for curve fitting.
                            [default: last day of the imported series].
+
+       -r depth            Retrospective day by day curve fitting and simulation the model back for depth number of days.
 
        -h|-?|?             Show these usage instructions.
 
