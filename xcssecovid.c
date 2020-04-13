@@ -88,13 +88,14 @@ int usage(const char *exe)
                            - ERF  Shifted Error Function -- (generic form) https://en.wikipedia.org/wiki/Error_function\n\
                            - GLF  Generalised Logistic Function -- https://en.wikipedia.org/wiki/Generalised_logistic_function\n\n\
        -e                  Only export the extracted and transposed time series without curve fitting and simulation of the model.\n\n\
-       -r                  Only report the model description and the values of its parameters with or without fitting, but without exporting any curve data.\n\n\
+       -i                  Only inform the model description and the values of its parameters with or without fitting, but without exporting any curve data.\n\n\
        -s                  Simulate the model without curve fitting before.\n\n\
        -t thresh           Threshold of minimal number of cases to include into curve fitting and simulation [default: 17].\n\n\
        -o day#             The day# of the first data point in the imported time series to be included for curve fitting.\n\
                            [default: first day with more than <thresh> cases].\n\n\
        -z day#             The day# of the last data point in the imported time series to be included for curve fitting.\n\
                            [default: last day of the imported series].\n\n\
+       -r depth            Retrospective day by day curve fitting and simulation the model back for depth number of days.\n\n\
        -h|-?|?             Show these usage instructions.\n\n\
        <Country>           Select the country for which the time series shall be processed.\n\n\
        <CSV Input file>    Path to the CSSE@JHU's Covid-19 time series CSV file.\n\n\
@@ -125,26 +126,28 @@ int main(int argc, char *const argv[])
    initvals initialValues = initialValues_SIR;
    function modelFunction = modelFunction_SIR;
 
-   bool  do_simulation = true,
-         do_curve_fit  = true,
-         export_series = true;
+   bool do_simulation = true,
+        do_curve_fit  = true,
+        export_series = true;
 
-   ldouble thr = 17.0L,
-             o = NAN,
-             z = NAN;
+   int     r = 0;
+   ldouble o = NAN,
+           z = NAN,
+         thr = 17.0L;
 
    ldouble A[mpar] = {NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN},
-          dA[mpar] = {};
+         **R       = NULL;
 
-   int     f[mpar] = {undefined, undefined, undefined, undefined, undefined,
-                      undefined, undefined, undefined, undefined, undefined};
+   int    f[mpar] = {undefined, undefined, undefined, undefined, undefined,
+                     undefined, undefined, undefined, undefined, undefined};
 
    bool aopt = false;
    int  opc;
-   while ((opc = getopt(argc, argv, "af:0:1:2:3:4:5:6:7:8:9:m:erst:o:z:h?")) != -1)
+   while ((opc = getopt(argc, argv, "af:0:1:2:3:4:5:6:7:8:9:m:eist:o:r:z:h?")) != -1)
    {
       char   *chk, c;
       int     i;
+      long    l;
       ldouble v;
 
       switch (opc)
@@ -244,7 +247,7 @@ int main(int argc, char *const argv[])
             export_series = true;
             break;
 
-         case 'r':
+         case 'i':
             do_simulation = true;
             export_series = false;
             break;
@@ -266,6 +269,13 @@ int main(int argc, char *const argv[])
              && ((v = strtold(optarg, &chk)) != 0.0L || chk != optarg)
              && (v < z || isnan(z)))
                o = v;
+            else
+               return usage(exe);
+            break;
+
+         case 'r':
+            if (optarg && *optarg && (l = strtol(optarg, NULL, 10)) > 0)
+               r = (int)l;
             else
                return usage(exe);
             break;
@@ -303,14 +313,23 @@ int main(int argc, char *const argv[])
                    ? stdout
                    : fopen(argv[optind+2], "w"))
          {
-            int     i, m = 0, n = 0;
+            int     h, i, j, m = 0, n = 0;
             char   *line;
             char    d[65536];
-            ldouble t[ndays], c[ndays], l[ndays];
+            ldouble t[ndays],
+                    c[ndays],
+                  **l = malloc((r+1)*sizeof(ldouble *));
+
+            for (h = 0; h <= r; h++)
+               l[h] = malloc(ndays*sizeof(ldouble));
 
             // day 1 of the CSSE time series is 2020-01-22, hence day 0 is 2020-01-21, i.e. t[20]
             for (i = 0; i < ndays; i++)
-               t[i] = i - 20, c[i] = l[i] = NAN;
+               t[i] = i - 20, c[i] = NAN;
+
+            for (h = 0; h <= r; h++)
+               for (i = 0; i < ndays; i++)
+                  l[h][i] = NAN;
 
             // find the lines with the series of the specified country
             while (line = fgets(d, 65536, csv))
@@ -375,28 +394,65 @@ int main(int argc, char *const argv[])
                fprintf(tsv, "# %s", exe);
                for (i = 1; i < argc; i++)
                   fprintf(tsv, " %s", argv[i]);
-               fprintf(tsv, "\n# %s\n", country);
+               fprintf(tsv, "\n#\n# %s\n", country);
 
                if (do_simulation)
                {
-                  int j, k = initialValues(t[m], c[m], c[n-1], A, f);
+                  int k = initialValues(t[m], c[m], c[n-1], A, f);
                   ldouble chiSqr = NAN;
 
-                  if (!do_curve_fit
-                   || isfinite(chiSqr = curveFit(n - m, &t[m], &c[m], k, A, dA, f, modelFunction)))
+                  if (do_curve_fit)
                   {
-                     fprintf(tsv, "%s\n#\n", modelDescription);
-                     for (j = 0; j < mpar && isfinite(A[j]); j++)
-                        if (dA[j] != 0.0L)
-                           fprintf(tsv, "#      %c%i = %11.6Lg ± %.5Lg %%\n", 'a', j, A[j], dA[j]);
-                        else
-                           fprintf(tsv, "#      %c%i = %11.6Lg\n", 'a', j, A[j]);
+                     ldouble dA[mpar] = {};
+                     if (isfinite(chiSqr = curveFit(n-m, &t[m], &c[m], k, A, dA, f, modelFunction)))
+                     {
+                        fprintf(tsv, "%s\n#\n", modelDescription);
+                        for (j = 0; j < mpar && isfinite(A[j]); j++)
+                           if (dA[j] != 0.0L)
+                              fprintf(tsv, "#      %c%d = %11.6Lg ± %.5Lg %%\n", 'a', j, A[j], dA[j]);
+                           else
+                              fprintf(tsv, "#      %c%d = %11.6Lg\n", 'a', j, A[j]);
 
-                     if (isfinite(chiSqr))
-                        fprintf(tsv, "#\n#  ChiSqr = %11.1Lf\n", chiSqr);
+                        if (isfinite(chiSqr))
+                           fprintf(tsv, "#\n#  ChiSqr = %11.1Lf\n", chiSqr);
+                     }
+
+                     else if (do_curve_fit)
+                        fprintf(tsv, "# Curve fit failed\n");
+
+                     if (r && do_curve_fit)
+                        if (r < n-m - 3)
+                        {
+                           R = malloc(r*sizeof(ldouble *));
+                           for (h = 0; h < r; h++)
+                           {
+                              R[h] = malloc(mpar*sizeof(ldouble));
+                              for (j = 0; j < mpar; j++)
+                                 R[h][j] = NAN;
+                              initialValues(t[m], c[m], c[n-1 - (h+1)], R[h], f);
+
+                              ldouble dR[mpar] = {};
+                              if (isfinite(chiSqr = curveFit(n-m - (h+1), &t[m], &c[m], k, R[h], dR, f, modelFunction)))
+                              {
+                                 fprintf(tsv, "#\n# Retropective curve fit #%d:\n%s\n#\n", h+1, modelDescription);
+                                 for (j = 0; j < mpar && isfinite(R[h][j]); j++)
+                                    if (dR[j] != 0.0L)
+                                       fprintf(tsv, "#      %c%d = %11.6Lg ± %.5Lg %%\n", 'a', j, R[h][j], dR[j]);
+                                    else
+                                       fprintf(tsv, "#      %c%d = %11.6Lg\n", 'a', j, R[h][j]);
+
+                                 if (isfinite(chiSqr))
+                                    fprintf(tsv, "#\n#  ChiSqr = %11.1Lf\n", chiSqr);
+                              }
+
+                              else
+                                 fprintf(tsv, "# Retrospective curve fit #%d failed\n", h+1);
+                           }
+                        }
+
+                        else
+                           fprintf(tsv, "# The retrospective depth #%d is too large\n", r);
                   }
-                  else if (do_curve_fit)
-                     fprintf(tsv, "# Curve fit failed\n");
 
                   if (export_series)
                   {
@@ -404,23 +460,47 @@ int main(int argc, char *const argv[])
                      // - the formular symbol of time is 't', the unit symbol of day is 'd'
                      // - the formular symbol of the number of cases is C without a unit
                      // - the formular symbol of the siumulated model is L without a unit
-                     fprintf(tsv, "t/d\tC\tL\n");
+                     fprintf(tsv, "t/d\tC\tL");
+                     if (!r)
+                        fprintf(tsv, "\n");
+                     else
+                     {
+                        for (h = 0; h < r; h++)
+                           fprintf(tsv, "%d\tL", h);
+                        fprintf(tsv, "%d\n", h);
+                     }
+
+                     for (h = 0; h <= r; h++)
+                        for (i = 0; i < ndays; i++)
+                        {
+                           if (i >= m)
+                              modelFunction(t[i], &l[h][i], (h == 0) ? A : R[h-1], i == m);
+                           else
+                              l[h][i] = 0.0L;
+                        }
+
                      for (i = 0; i < ndays; i++)
                      {
-                        if (i >= m)
-                           modelFunction(t[i], &l[i], A, i == m);
+                        if (isfinite(c[i]))
+                           fprintf(tsv, "%.0Lf\t%.0Lf", t[i], c[i]);
                         else
-                           l[i] = 0.0L;
+                           fprintf(tsv, "%.0Lf\t*",     t[i]);
 
-                        if (isfinite(c[i]) && isfinite(l[i]))
-                           fprintf(tsv, "%.0Lf\t%.0Lf\t%.6Lf\n", t[i], c[i], l[i]);
-                        else if (isfinite(c[i]))
-                           fprintf(tsv, "%.0Lf\t%.0Lf\t*\n",     t[i], c[i]);
-                        else if (isfinite(l[i]))
-                           fprintf(tsv, "%.0Lf\t*\t%.6Lf\n",     t[i],       l[i]);
-                        else
-                           fprintf(tsv, "%.0Lf\t*\t*\n",         t[i]);
+                        for (h = 0; h <= r; h++)
+                           if (isfinite(l[h][i]))
+                              fprintf(tsv, "\t%.0Lf",   l[h][i]);
+                           else
+                              fprintf(tsv, "\t*");
+                        fprintf(tsv, "\n");
                      }
+                  }
+
+
+                  if (R)
+                  {
+                     for (h = 0; h < r; h++)
+                        free(R[h]);
+                     free(R);
                   }
                }
 
@@ -433,11 +513,15 @@ int main(int argc, char *const argv[])
                   for (i = 0; i < ndays; i++)
                   {
                      if (isfinite(c[i]))
-                        fprintf(tsv, "%.0Lf\t%.6Lf\n",t[i], c[i]);
+                        fprintf(tsv, "%.0Lf\t%.6Lf\n", t[i], c[i]);
                      else
-                        fprintf(tsv, "%.0Lf\t*\n",    t[i]);
+                        fprintf(tsv, "%.0Lf\t*\n",     t[i]);
                   }
                }
+
+               for (h = 0; h <= r; h++)
+                  free(l[h]);
+               free(l);
             }
 
             else
