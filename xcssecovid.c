@@ -95,7 +95,7 @@ int usage(const char *exe)
                            [default: first day with more than <thresh> cases].\n\n\
        -z day#             The day# of the last data point in the imported time series to be included for curve fitting.\n\
                            [default: last day of the imported series].\n\n\
-       -r depth            Retrospective day by day curve fitting and simulation the model back for depth number of days.\n\n\
+       -r depth            Retrospective day by day curve fitting and simulation of the model back for depth number of days.\n\n\
        -h|-?|?             Show these usage instructions.\n\n\
        <Country>           Select the country for which the time series shall be processed.\n\n\
        <CSV Input file>    Path to the CSSE@JHU's Covid-19 time series CSV file.\n\n\

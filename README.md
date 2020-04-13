@@ -60,7 +60,7 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
        -z day#             The day# of the last data point in the imported time series to be included for curve fitting.
                            [default: last day of the imported series].
 
-       -r depth            Retrospective day by day curve fitting and simulation the model back for depth number of days.
+       -r depth            Retrospective day by day curve fitting and simulation of the model back for depth number of days.
 
        -h|-?|?             Show these usage instructions.
 
