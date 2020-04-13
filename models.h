@@ -27,29 +27,29 @@
 
 
 extern char *modelDescription_LF;
-int  initialValues_LF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
-void modelFunction_LF(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
+int initialValues_LF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
+int modelFunction_LF(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
 
 extern char *modelDescription_LDE;
-int  initialValues_LDE(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
-void modelFunction_LDE(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
+int initialValues_LDE(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
+int modelFunction_LDE(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
 
 extern char *modelDescription_SI;
-int  initialValues_SI(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
-void modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
+int initialValues_SI(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
+int modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
 
 extern char *modelDescription_SIR;
-int  initialValues_SIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
-void modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
+int initialValues_SIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
+int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
 
 extern char *modelDescription_SIRX;
-int  initialValues_SIRX(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
-void modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
+int initialValues_SIRX(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
+int modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
 
 extern char *modelDescription_ERF;
-int  initialValues_ERF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
-void modelFunction_ERF(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
+int initialValues_ERF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
+int modelFunction_ERF(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
 
 extern char *modelDescription_GLF;
-int  initialValues_GLF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
-void modelFunction_GLF(ldouble t, ldouble *Y, ldouble A[mpar], bool init);
+int initialValues_GLF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
+int modelFunction_GLF(ldouble t, ldouble *Y, ldouble A[mpar], bool init);

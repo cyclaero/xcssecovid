@@ -54,9 +54,10 @@ int initialValues_LF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int 
    return k;
 }
 
-void modelFunction_LF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_LF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 {
    *Y = A[1]/(1 + expl(-A[0]*(t - A[2])));
+   return 0;
 }
 
 
@@ -86,21 +87,25 @@ static void lde(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    *dY = A[0]**Y*(1 - *Y/A[1]);
 }
 
-void modelFunction_LDE(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_LDE(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 {
+   int rc;
+
    static ldouble t0;
    static ldouble Y0;
 
    if (init)
    {
       Y0 = A[2];
-      ODEInt(1, A[3], t, &Y0, A, lde);
+      rc = ODEInt(1, A[3], t, &Y0, A, lde);
    }
    else
-      ODEInt(1, t0, t, &Y0, A, lde);
+      rc = ODEInt(1, t0, t, &Y0, A, lde);
 
    t0 = t;
    *Y = Y0;
+
+   return rc;
 }
 
 
@@ -132,8 +137,10 @@ static void sides(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    dY[1] =  A[0]/A[1]*Y[0]*Y[1];    // dI/dt
 }
 
-void modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 {
+   int rc;
+
    static ldouble t0;
    static ldouble Y0[2];
 
@@ -141,13 +148,15 @@ void modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
    {
       Y0[0] = A[1];
       Y0[1] = A[2];
-      ODEInt(2, A[3], t, Y0, A, sides);
+      rc = ODEInt(2, A[3], t, Y0, A, sides);
    }
    else
-      ODEInt(2, t0, t, Y0, A, sides);
+      rc = ODEInt(2, t0, t, Y0, A, sides);
 
    t0 = t;
    *Y = Y0[1];  // I - do curve fit of I(t)
+
+   return rc;
 }
 
 
@@ -183,8 +192,10 @@ static void sirdes(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    dY[2] =  A[3]*Y[1];                          // dR/dt
 }
 
-void modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 {
+   int rc;
+
    static ldouble t0;
    static ldouble Y0[3];
 
@@ -193,13 +204,15 @@ void modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
       Y0[0] = A[1];
       Y0[1] = A[2];
       Y0[2] = A[4];
-      ODEInt(3, A[5], t, Y0, A, sirdes);
+      rc = ODEInt(3, A[5], t, Y0, A, sirdes);
    }
    else
-      ODEInt(3, t0, t, Y0, A, sirdes);
+      rc = ODEInt(3, t0, t, Y0, A, sirdes);
 
    t0 = t;
    *Y = Y0[2];  // R - do the curve fit of R(t)
+
+   return rc;
 }
 
 
@@ -240,8 +253,10 @@ static void sirxdes(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    dY[3] =  (A[4] + A[5])*Y[1];                                // dX/dt
 }
 
-void modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 {
+   int rc;
+
    static ldouble t0;
    static ldouble Y0[4];
 
@@ -251,13 +266,15 @@ void modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
       Y0[1] = A[2];
       Y0[2] = A[6];
       Y0[3] = A[7];
-      ODEInt(4, A[8], t, Y0, A, sirxdes);
+      rc = ODEInt(4, A[8], t, Y0, A, sirxdes);
    }
    else
-      ODEInt(4, t0, t, Y0, A, sirxdes);
+      rc = ODEInt(4, t0, t, Y0, A, sirxdes);
 
    t0 = t;
    *Y = Y0[3];  // X - do the curve fit of X(t)
+
+   return rc;
 }
 
 
@@ -284,9 +301,10 @@ int initialValues_ERF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
    return k;
 }
 
-void modelFunction_ERF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_ERF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 {
    *Y = 0.5*A[1]*(1 + erfl(A[0]*(t - A[2])));
+   return 0;
 }
 
 
@@ -312,7 +330,8 @@ int initialValues_GLF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
    return k;
 }
 
-void modelFunction_GLF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_GLF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 {
    *Y = A[1]/powl(1 + expl(-A[0]*A[3]*(t - A[2])), 1/A[3]);
+   return 0;
 }

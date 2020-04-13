@@ -69,6 +69,17 @@ static inline const char *execname(const char *cmd)
    return r + 1;
 }
 
+enum
+{
+    no_error,
+   usg_error,
+    fs_error,
+   val_error,
+   fit_error,
+   par_error,
+   sim_error
+};
+
 int usage(const char *exe)
 {
    printf("\nExtract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country - Copyright Dr. Rolf Jansen (c) 2020 - %s\n", version);
@@ -101,7 +112,7 @@ int usage(const char *exe)
        <CSV Input file>    Path to the CSSE@JHU's Covid-19 time series CSV file.\n\n\
        <TSV Output File>   Path to the TSV output file containing the extracted and transposed time series for the given <Country>, including\n\
                            a column for a simulated time series by the given model, using the parameter as resulted from curve fitting.\n\n", exe);
-   return 1;
+   return usg_error;
 }
 
 
@@ -120,6 +131,8 @@ static inline size_t collen(const char *col)
 
 int main(int argc, char *const argv[])
 {
+   int rc = no_error;
+
    const char *exe = execname(argv[0]);
 
    char *modelDescription = modelDescription_SIR;
@@ -417,10 +430,15 @@ int main(int argc, char *const argv[])
                            fprintf(tsv, "#\n#  ChiSqr = %11.1Lf\n", chiSqr);
                      }
 
-                     else if (do_curve_fit)
-                        fprintf(tsv, "# Curve fit failed\n");
+                     else
+                     {
+                        fprintf(tsv,
+                             "# Curve fit failed\n");
+                        printf("Curve fit failed\n");
+                        rc = fit_error;
+                     }
 
-                     if (r && do_curve_fit)
+                     if (rc == no_error && r)
                         if (r < n-m - 3)
                         {
                            R = malloc(r*sizeof(ldouble *));
@@ -446,15 +464,26 @@ int main(int argc, char *const argv[])
                               }
 
                               else
-                                 fprintf(tsv, "# Retrospective curve fit #%d failed\n", h+1);
+                              {
+                                 fprintf(tsv,
+                                      "# Retrospective curve fit #%d failed\n", h+1);
+                                 printf("Retrospective curve fit #%d failed\n", h+1);
+                                 rc = fit_error;
+                                 break;
+                              }
                            }
                         }
 
                         else
-                           fprintf(tsv, "# The retrospective depth #%d is too large\n", r);
+                        {
+                           fprintf(tsv,
+                                "# The retrospective depth #%d is too large\n", r);
+                           printf("The retrospective depth #%d is too large\n", r);
+                           rc = par_error;
+                        }
                   }
 
-                  if (export_series)
+                  if (rc == no_error && export_series)
                   {
                      // write the column header with formular symbols and units.
                      // - the formular symbol of time is 't', the unit symbol of day is 'd'
@@ -474,7 +503,11 @@ int main(int argc, char *const argv[])
                         for (i = 0; i < ndays; i++)
                         {
                            if (i >= m)
-                              modelFunction(t[i], &l[h][i], (h == 0) ? A : R[h-1], i == m);
+                              if (modelFunction(t[i], &l[h][i], (h == 0) ? A : R[h-1], i == m) != no_error)
+                              {
+                                 rc = sim_error;
+                                 goto sim_err_out;
+                              }
                            else
                               l[h][i] = 0.0L;
                         }
@@ -493,9 +526,16 @@ int main(int argc, char *const argv[])
                               fprintf(tsv, "\t*");
                         fprintf(tsv, "\n");
                      }
+
+                     goto no_err_out;
                   }
 
+               sim_err_out:
+                  fprintf(tsv,
+                       "# Simulation failed\n");
+                  printf("Simulation failed\n");
 
+               no_err_out:
                   if (R)
                   {
                      for (h = 0; h < r; h++)
@@ -525,15 +565,32 @@ int main(int argc, char *const argv[])
             }
 
             else
-               fprintf(tsv, "# No values for country %s encountered.\n", country);
+            {
+               fprintf(tsv,
+                    "# No values for country %s encountered.\n", country);
+               printf("No values for country %s encountered.\n", country);
+               rc = val_error;
+            }
 
             if (tsv != stdout)
                fclose(tsv);
+         }
+
+         else
+         {
+            printf("Output file %s could not be opened for writing.\n", argv[optind+2]);
+            rc = fs_error;
          }
 
          if (csv != stdin)
             fclose(csv);
       }
 
-   return 0;
+      else
+      {
+         printf("Input file %s not found.\n", argv[optind+1]);
+         rc = fs_error;
+      }
+
+   return rc;
 }
