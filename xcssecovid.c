@@ -503,8 +503,10 @@ int main(int argc, char *const argv[])
                         for (i = 0; i < ndays; i++)
                         {
                            if (i >= m)
+                           {
                               if (modelFunction(t[i], &l[h][i], (h == 0) ? A : R[h-1], i == m) != no_error)
                                  goto sim_err_out;
+                           }
                            else
                               l[h][i] = 0.0L;
                         }
