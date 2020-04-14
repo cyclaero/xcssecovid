@@ -51,6 +51,9 @@ static inline ldouble sqrl(ldouble x)
    return x*x;
 }
 
+ldouble aave(int n, ldouble *z);
+ldouble sdev(int n, ldouble *z);
+
 typedef void (*odeset)(ldouble t, ldouble *Y, ldouble *dY, ldouble *A);
 deq_error ODEInt(int m, ldouble t0, ldouble t, ldouble *Y, ldouble *A, odeset equations);
 

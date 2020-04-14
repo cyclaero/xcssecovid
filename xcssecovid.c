@@ -148,8 +148,8 @@ int main(int argc, char *const argv[])
            z = NAN,
          thr = 17.0L;
 
-   ldouble A[mpar] = {NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN},
-         **R       = NULL;
+   ldouble A0[mpar] = {NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN},
+         **A        = NULL;
 
    int    f[mpar] = {undefined, undefined, undefined, undefined, undefined,
                      undefined, undefined, undefined, undefined, undefined};
@@ -187,11 +187,11 @@ int main(int argc, char *const argv[])
          case '0' ... '9':
             if (aopt && optarg && *optarg)
             {
-               if ('0' <= opc && opc <= '9' && isnan(A[opc -= '0'])
+               if ('0' <= opc && opc <= '9' && isnan(A0[opc -= '0'])
                 && ((v = strtold(optarg, &chk)) != 0.0L || chk != optarg)
                 && isfinite(v))
                {
-                  A[opc] = v;
+                  A0[opc] = v;
                   aopt = false;
                }
                else
@@ -403,61 +403,65 @@ int main(int argc, char *const argv[])
             }
 
             if (n > m)
-            {
-               fprintf(tsv, "# %s", exe);
-               for (i = 1; i < argc; i++)
-                  fprintf(tsv, " %s", argv[i]);
-               fprintf(tsv, "\n#\n# %s\n", country);
-
-               if (do_simulation)
+               if (r < n-m - 3)
                {
-                  int k = initialValues(t[m], c[m], c[n-1], A, f);
-                  ldouble chiSqr = NAN;
+                  fprintf(tsv, "# %s", exe);
+                  for (i = 1; i < argc; i++)
+                     fprintf(tsv, " %s", argv[i]);
+                  fprintf(tsv, "\n#\n# %s\n", country);
 
-                  if (do_curve_fit)
+                  if (do_simulation)
                   {
-                     ldouble dA[mpar] = {};
-                     if (isfinite(chiSqr = curveFit(n-m, &t[m], &c[m], k, A, dA, f, modelFunction)))
+                     A = malloc((r+1)*sizeof(ldouble *));
+                     for (h = 0; h <= r; h++)
+                        A[h] = malloc(mpar*sizeof(ldouble));
+
+                     for (j = 0; j < mpar; j++)
+                        A[0][j] = A0[j];
+                     int k = initialValues(t[m], c[m], c[n-1], A[0], f);
+
+                     if (do_curve_fit)
                      {
-                        fprintf(tsv, "%s\n#\n", modelDescription);
-                        for (j = 0; j < mpar && isfinite(A[j]); j++)
-                           if (dA[j] != 0.0L)
-                              fprintf(tsv, "#      %c%d = %11.6Lg ± %.5Lg %%\n", 'a', j, A[j], dA[j]);
-                           else
-                              fprintf(tsv, "#      %c%d = %11.6Lg\n", 'a', j, A[j]);
-
-                        if (isfinite(chiSqr))
-                           fprintf(tsv, "#\n#  ChiSqr = %11.1Lf\n", chiSqr);
-                     }
-
-                     else
-                     {
-                        fprintf(tsv,
-                             "# Curve fit failed\n");
-                        printf("Curve fit failed\n");
-                        rc = fit_error;
-                     }
-
-                     if (rc == no_error && r)
-                        if (r < n-m - 3)
+                        ldouble chiSqr = NAN;
+                        ldouble dA[mpar] = {};
+                        if (isfinite(chiSqr = curveFit(n-m, &t[m], &c[m], k, A[0], dA, f, modelFunction)))
                         {
-                           R = malloc(r*sizeof(ldouble *));
-                           for (h = 0; h < r; h++)
-                           {
-                              R[h] = malloc(mpar*sizeof(ldouble));
-                              for (j = 0; j < mpar; j++)
-                                 R[h][j] = NAN;
-                              initialValues(t[m], c[m], c[n-1 - (h+1)], R[h], f);
+                           fprintf(tsv, "%s\n#\n", modelDescription);
+                           for (j = 0; j < mpar && isfinite(A[0][j]); j++)
+                              if (dA[j] != 0.0L)
+                                 fprintf(tsv, "#      %c%d = %11.6Lg ± %.5Lg %%\n", 'a', j, A[0][j], dA[j]);
+                              else
+                                 fprintf(tsv, "#      %c%d = %11.6Lg\n", 'a', j, A[0][j]);
 
-                              ldouble dR[mpar] = {};
-                              if (isfinite(chiSqr = curveFit(n-m - (h+1), &t[m], &c[m], k, R[h], dR, f, modelFunction)))
+                           if (isfinite(chiSqr))
+                              fprintf(tsv, "#\n#  ChiSqr = %11.1Lf\n", chiSqr);
+                        }
+
+                        else
+                        {
+                           fprintf(tsv,
+                                "# Curve fit failed\n");
+                           printf("Curve fit failed\n");
+                           rc = fit_error;
+                           goto cleanup;
+                        }
+
+                        if (rc == no_error && r)
+                        {
+                           for (h = 1; h <= r; h++)
+                           {
+                              for (j = 0; j < mpar; j++)
+                                 A[h][j] = A0[j], dA[j] = 0.0L;
+                              initialValues(t[m], c[m], c[n-1 - h], A[h], f);
+
+                              if (isfinite(chiSqr = curveFit(n-m - h, &t[m], &c[m], k, A[h], dA, f, modelFunction)))
                               {
-                                 fprintf(tsv, "#\n# Retropective curve fit #%d:\n%s\n#\n", h+1, modelDescription);
-                                 for (j = 0; j < mpar && isfinite(R[h][j]); j++)
-                                    if (dR[j] != 0.0L)
-                                       fprintf(tsv, "#      %c%d = %11.6Lg ± %.5Lg %%\n", 'a', j, R[h][j], dR[j]);
+                                 fprintf(tsv, "#\n# Retropective curve fit #%d:\n%s\n#\n", h, modelDescription);
+                                 for (j = 0; j < mpar && isfinite(A[h][j]); j++)
+                                    if (dA[j] != 0.0L)
+                                       fprintf(tsv, "#      %c%d = %11.6Lg ± %.5Lg %%\n", 'a', j, A[h][j], dA[j]);
                                     else
-                                       fprintf(tsv, "#      %c%d = %11.6Lg\n", 'a', j, R[h][j]);
+                                       fprintf(tsv, "#      %c%d = %11.6Lg\n", 'a', j, A[h][j]);
 
                                  if (isfinite(chiSqr))
                                     fprintf(tsv, "#\n#  ChiSqr = %11.1Lf\n", chiSqr);
@@ -466,103 +470,114 @@ int main(int argc, char *const argv[])
                               else
                               {
                                  fprintf(tsv,
-                                      "# Retrospective curve fit #%d failed\n", h+1);
-                                 printf("Retrospective curve fit #%d failed\n", h+1);
+                                      "# Retrospective curve fit #%d failed\n", h);
+                                 printf("Retrospective curve fit #%d failed\n", h);
                                  rc = fit_error;
                                  break;
                               }
                            }
-                        }
 
+                           fprintf(tsv, "#\n# Std. Dev. of all parameters of the retrospection over %d days\n", r+1);
+                           ldouble *Z = malloc((r+1)*sizeof(ldouble));
+                           for (j = 0; j < mpar && isfinite(A[0][j]); j++)
+                           {
+                              for (h = 0; h <= r; h++)
+                                 Z[h] = A[h][j];
+                              if (dA[j] != 0.0L)
+                                 fprintf(tsv, "#     s%c%d = %11.6Lg %%\n", 'a', j, sdev(r+1, Z)/aave(r+1, Z)*100.0L);
+                           }
+                           free(Z);
+                        }
+                     }
+
+                     if (rc == no_error && export_series)
+                     {
+                        // write the column header with formular symbols and units.
+                        // - the formular symbol of time is 't', the unit symbol of day is 'd'
+                        // - the formular symbol of the number of cases is C without a unit
+                        // - the formular symbol of the siumulated model is L without a unit
+                        fprintf(tsv, "t/d\tC\tL");
+                        if (!r)
+                           fprintf(tsv, "\n");
                         else
                         {
-                           fprintf(tsv,
-                                "# The retrospective depth #%d is too large\n", r);
-                           printf("The retrospective depth #%d is too large\n", r);
-                           rc = par_error;
+                           for (h = 0; h < r; h++)
+                              fprintf(tsv, "%d\tL", h);
+                           fprintf(tsv, "%d\n", h);
                         }
+
+                        for (h = 0; h <= r; h++)
+                           for (i = 0; i < ndays; i++)
+                           {
+                              if (i >= m)
+                              {
+                                 if (modelFunction(t[i], &l[h][i], A[h], i == m) != no_error)
+                                    goto sim_err_out;
+                              }
+                              else
+                                 l[h][i] = 0.0L;
+                           }
+
+                        for (i = 0; i < ndays; i++)
+                        {
+                           if (isfinite(c[i]))
+                              fprintf(tsv, "%.0Lf\t%.0Lf", t[i], c[i]);
+                           else
+                              fprintf(tsv, "%.0Lf\t*",     t[i]);
+
+                           for (h = 0; h <= r; h++)
+                              if (isfinite(l[h][i]))
+                                 fprintf(tsv, "\t%.0Lf",   l[h][i]);
+                              else
+                                 fprintf(tsv, "\t*");
+                           fprintf(tsv, "\n");
+                        }
+
+                        goto cleanup;
+
+                     sim_err_out:
+                        fprintf(tsv,
+                             "# Simulation failed\n");
+                        printf("Simulation failed\n");
+                        rc = sim_error;
+                     }
+
+                  cleanup:
+                     if (A)
+                     {
+                        for (h = 0; h <= r; h++)
+                           free(A[h]);
+                        free(A);
+                     }
                   }
 
-                  if (rc == no_error && export_series)
+                  else
                   {
                      // write the column header with formular symbols and units.
                      // - the formular symbol of time is 't', the unit symbol of day is 'd'
                      // - the formular symbol of the number of cases is C without a unit
-                     // - the formular symbol of the siumulated model is L without a unit
-                     fprintf(tsv, "t/d\tC\tL");
-                     if (!r)
-                        fprintf(tsv, "\n");
-                     else
-                     {
-                        for (h = 0; h < r; h++)
-                           fprintf(tsv, "%d\tL", h);
-                        fprintf(tsv, "%d\n", h);
-                     }
-
-                     for (h = 0; h <= r; h++)
-                        for (i = 0; i < ndays; i++)
-                        {
-                           if (i >= m)
-                           {
-                              if (modelFunction(t[i], &l[h][i], (h == 0) ? A : R[h-1], i == m) != no_error)
-                                 goto sim_err_out;
-                           }
-                           else
-                              l[h][i] = 0.0L;
-                        }
-
+                     fprintf(tsv, "t/d\tC\n");
                      for (i = 0; i < ndays; i++)
                      {
                         if (isfinite(c[i]))
-                           fprintf(tsv, "%.0Lf\t%.0Lf", t[i], c[i]);
+                           fprintf(tsv, "%.0Lf\t%.6Lf\n", t[i], c[i]);
                         else
-                           fprintf(tsv, "%.0Lf\t*",     t[i]);
-
-                        for (h = 0; h <= r; h++)
-                           if (isfinite(l[h][i]))
-                              fprintf(tsv, "\t%.0Lf",   l[h][i]);
-                           else
-                              fprintf(tsv, "\t*");
-                        fprintf(tsv, "\n");
+                           fprintf(tsv, "%.0Lf\t*\n",     t[i]);
                      }
-
-                     goto no_err_out;
                   }
 
-               sim_err_out:
-                  fprintf(tsv,
-                       "# Simulation failed\n");
-                  printf("Simulation failed\n");
-                  rc = sim_error;
-
-               no_err_out:
-                  if (R)
-                  {
-                     for (h = 0; h < r; h++)
-                        free(R[h]);
-                     free(R);
-                  }
+                  for (h = 0; h <= r; h++)
+                     free(l[h]);
+                  free(l);
                }
 
                else
                {
-                  // write the column header with formular symbols and units.
-                  // - the formular symbol of time is 't', the unit symbol of day is 'd'
-                  // - the formular symbol of the number of cases is C without a unit
-                  fprintf(tsv, "t/d\tC\n");
-                  for (i = 0; i < ndays; i++)
-                  {
-                     if (isfinite(c[i]))
-                        fprintf(tsv, "%.0Lf\t%.6Lf\n", t[i], c[i]);
-                     else
-                        fprintf(tsv, "%.0Lf\t*\n",     t[i]);
-                  }
+                  fprintf(tsv,
+                       "# The retrospective depth #%d is too large\n", r);
+                  printf("The retrospective depth #%d is too large\n", r);
+                  rc = par_error;
                }
-
-               for (h = 0; h <= r; h++)
-                  free(l[h]);
-               free(l);
-            }
 
             else
             {

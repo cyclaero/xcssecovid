@@ -35,6 +35,24 @@
 #include "numerics.h"
 
 
+ldouble aave(int n, ldouble *z)
+{
+   ldouble sum = 0.0L;
+   for (int i = 0; i < n; i++)
+      sum += z[i];
+   return sum/n;
+}
+
+ldouble sdev(int n, ldouble *z)
+{
+   ldouble sum = 0.0L,
+           sqs = 0.0L;
+   for (int i = 0; i < n; i++)
+      sum += z[i], sqs += sqrl(z[i]);
+   return sqrtl((sqs - sqrl(sum)/n)/(n - 1));
+}
+
+
 #pragma mark ••• Bulirsch–Stoer Differential Equation Solver •••
 
 #define tol (ldexp(__LDBL_EPSILON__, 21))
