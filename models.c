@@ -113,7 +113,7 @@ int modelFunction_LDE(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
 char *modelDescription_SI =
 "# Model: SI Differential Equations\n"\
-"#   dy0/dt = -a0/a1·y0·y1 || y0(a3) = a1\n"\
+"#   dy0/dt = -a0/a1·y0·y1 || y0(a3) = a1-a2\n"\
 "#   dy1/dt =  a0/a1·y0·y1 || y1(a3) = a2";
 
 int initialValues_SI(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
@@ -146,7 +146,7 @@ int modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
    if (init)
    {
-      Y0[0] = A[1];
+      Y0[0] = A[1] - A[2];
       Y0[1] = A[2];
       rc = ODEInt(2, A[3], t, Y0, A, sides);
    }
@@ -164,7 +164,7 @@ int modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
 char *modelDescription_SIR =
 "# Model: SIR Differential Equations\n"\
-"# S dy0/dt = -a0/a1·y0·y1         || y0(a5) = a1\n"\
+"# S dy0/dt = -a0/a1·y0·y1         || y0(a5) = a1-a2-a4\n"\
 "# I dy1/dt =  a0/a1·y0·y1 - a3·y1 || y1(a5) = a2\n"\
 "# R dy2/dt =  a3·y1               || y2(a5) = a4 <- a3·a2";
 
@@ -201,7 +201,7 @@ int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
    if (init)
    {
-      Y0[0] = A[1];
+      Y0[0] = A[1] - A[2] - A[4];
       Y0[1] = A[2];
       Y0[2] = A[4];
       rc = ODEInt(3, A[5], t, Y0, A, sirdes);
@@ -220,7 +220,7 @@ int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
 char *modelDescription_SEIR =
 "# Model: SEIR Differential Equations\n"\
-"# S  dy0/dt = -a0/a1·y0·y1                  || y0(a7) = a1\n"\
+"# S  dy0/dt = -a0/a1·y0·y1                  || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  a0/a1·y0·y1 - a3·y1          || y1(a7) = a2\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2                || y2(a7) = a5 <- a2·a3\n"\
 "# R  dy3/dt =  a4·y2                        || y3(a7) = a6 <- a2·a3·a4";
@@ -230,7 +230,7 @@ int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], in
    if (isnan(A[0])) A[0] =  0.6L;            // beta  - infection rate
    if (isnan(A[1])) A[1] =  2.0L*max;        // population
    if (isnan(A[2])) A[2] = 10.0L*min;        // total number of exposed individuals at t1
-   if (isnan(A[3])) A[3] =  0.3L;            // sigma - incubation rate
+   if (isnan(A[3])) A[3] =  0.25L;           // sigma - incubation rate
    if (isnan(A[4])) A[4] =  0.1L;            // gamma - recovery rate
    if (isnan(A[5])) A[5] = A[2]*A[3];        // E(t1) boundary value at t1
    if (isnan(A[6])) A[6] = A[2]*A[3]*A[4];   // R(t1) boundary value at t1
@@ -240,7 +240,7 @@ int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], in
    for (i = 0; i < mpar; i++)
       if (f[i] != undefined) k++;
    if (k == 0)
-      f[k++] = 0, f[k++] = 1, f[k++] = 4;
+      f[k++] = 0, f[k++] = 1, f[k++] = 3;
    return k;
 }
 
@@ -261,7 +261,7 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
    if (init)
    {
-      Y0[0] = A[1];
+      Y0[0] = A[1] - A[2] - A[5] - A[6];
       Y0[1] = A[2];
       Y0[2] = A[5];
       Y0[3] = A[6];
@@ -281,7 +281,7 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
 char *modelDescription_SIRX =
 "# Model: SIRX Differential Equations\n"\
-"# S  dy0/dt = -a0/a1·y0·y1 - a4·y0                || y0(a8) = a1\n"\
+"# S  dy0/dt = -a0/a1·y0·y1 - a4·y0                || y0(a8) = a1-a2-a6-a7\n"\
 "# I  dy1/dt =  a0/a1·y0·y1 - (a3 + a4 + a5)·y1    || y1(a8) = a2\n"\
 "# R  dy2/dt =  a3·y1 + a4·y0                      || y2(a8) = a6 <- a3·a2 + a4·a1\n"\
 "# X  dy3/dt =  (a4 + a5)·y1                       || y3(a8) = a7 <- (a4 + a5)·a2";
@@ -323,7 +323,7 @@ int modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
    if (init)
    {
-      Y0[0] = A[1];
+      Y0[0] = A[1] - A[2] - A[6] - A[7];
       Y0[1] = A[2];
       Y0[2] = A[6];
       Y0[3] = A[7];
