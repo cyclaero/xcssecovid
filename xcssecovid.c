@@ -89,7 +89,7 @@ int usage(const char *exe)
                            knowledge/best educated guesses. Example: -a0 0.57 -a1 125000\n\n\
        -f (0-9)+           Overrides the default selection of a model's parameters which take part in curve fitting, and which usually is a0, a1, a2.\n\
                            Example: -f 1245 would lead to curve fitting against the paramters a1, a2, a4 and a5, while a0 and a3 would be left untouched.\n\
-                           Different models got different number of parameters, which is currently 3 to 6.\n\n\
+                           Different models got different number of parameters, which is currently 3 to 9.\n\n\
        -m model            Select the model for curve fitting and simulation:\n\
                            - LF   Logistic Function -- https://en.wikipedia.org/wiki/Logistic_function\n\
                            - LDE  Logistic Differential Equation -- https://en.wikipedia.org/wiki/Logistic_function#Logistic_differential_equation\n\
