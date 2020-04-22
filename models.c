@@ -63,6 +63,7 @@ int modelFunction_LF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
 #pragma mark ••• Logistic Differential Equation •••
 
+// https://en.wikipedia.org/wiki/Logistic_function#Logistic_differential_equation
 char *modelDescription_LDE =
 "# Model: Logistic Differential Equation\n"\
 "#   dy/dt = a0·y·(1 - y/a1) || y(a3) = a2";
@@ -111,6 +112,7 @@ int modelFunction_LDE(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
 #pragma mark ••• SI Differential Equations •••
 
+// https://de.wikipedia.org/wiki/SI-Modell
 char *modelDescription_SI =
 "# Model: SI Differential Equations\n"\
 "#   dy0/dt = -a0/a1·y0·y1 || y0(a3) = a1-a2\n"\
@@ -154,7 +156,7 @@ int modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
       rc = ODEInt(2, t0, t, Y0, A, sides);
 
    t0 = t;
-   *Y = Y0[1];  // I - do curve fit of I(t)
+   *Y = Y0[1];  // I - curve fit of I(t)
 
    return rc;
 }
@@ -162,6 +164,7 @@ int modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
 #pragma mark ••• SIR Differential Equations •••
 
+// https://en.wikipedia.org/wiki/Mathematical_modelling_of_infectious_disease#The_SIR_model
 char *modelDescription_SIR =
 "# Model: SIR Differential Equations\n"\
 "# S dy0/dt = -a0/a1·y0·y1         || y0(a5) = a1-a2-a4\n"\
@@ -210,7 +213,7 @@ int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
       rc = ODEInt(3, t0, t, Y0, A, sirdes);
 
    t0 = t;
-   *Y = Y0[2];  // R - do the curve fit of R(t)
+   *Y = Y0[2];  // R - curve fit of R(t)
 
    return rc;
 }
@@ -218,6 +221,7 @@ int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
 #pragma mark ••• SEIR Differential Equations •••
 
+// https://www.idmod.org/docs/hiv/model-seir.html
 char *modelDescription_SEIR =
 "# Model: SEIR Differential Equations\n"\
 "# S  dy0/dt = -a0/a1·y0·y1                  || y0(a7) = a1-a2-a5-a6\n"\
@@ -230,9 +234,9 @@ int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], in
    if (isnan(A[0])) A[0] =  0.6L;            // beta  - infection rate
    if (isnan(A[1])) A[1] =  2.0L*max;        // population
    if (isnan(A[2])) A[2] = 10.0L*min;        // total number of exposed individuals at t1
-   if (isnan(A[3])) A[3] =  0.25L;           // sigma - incubation rate
-   if (isnan(A[4])) A[4] =  0.1L;            // gamma - recovery rate
-   if (isnan(A[5])) A[5] = A[2]*A[3];        // E(t1) boundary value at t1
+   if (isnan(A[3])) A[3] =  0.4L;            // sigma - incubation rate (2.5 d until an infected individual becomes infectuous)
+   if (isnan(A[4])) A[4] =  0.2L;            // gamma - removal rate (more 5 d until the infectuous individual can be removed from the chain of infection)
+   if (isnan(A[5])) A[5] = A[2]*A[3];        // I(t1) boundary value at t1
    if (isnan(A[6])) A[6] = A[2]*A[3]*A[4];   // R(t1) boundary value at t1
    if (isnan(A[7])) A[7] = t1;
 
@@ -271,7 +275,7 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
       rc = ODEInt(4, t0, t, Y0, A, seirdes);
 
    t0 = t;
-   *Y = Y0[3];  // R - do the curve fit of R(t)
+   *Y = Y0[3];  // R - curve fit of R(t)
 
    return rc;
 }
@@ -279,6 +283,7 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
 #pragma mark ••• SIRX Differential Equations •••
 
+// http://rocs.hu-berlin.de/corona/docs/forecast/model/
 char *modelDescription_SIRX =
 "# Model: SIRX Differential Equations\n"\
 "# S  dy0/dt = -a0/a1·y0·y1 - a4·y0                || y0(a8) = a1-a2-a6-a7\n"\
@@ -333,7 +338,7 @@ int modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
       rc = ODEInt(4, t0, t, Y0, A, sirxdes);
 
    t0 = t;
-   *Y = Y0[3];  // X - do the curve fit of X(t)
+   *Y = Y0[3];  // X - curve fit of X(t)
 
    return rc;
 }
