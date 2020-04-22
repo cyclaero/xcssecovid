@@ -69,7 +69,7 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
        <CSV Input file>    Path to the CSSE@JHU's Covid-19 time series CSV file.
 
        <TSV Output File>   Path to the TSV output file containing the extracted and transposed time series for the given <Country>, including
-                           a column for a simulated time series by the given model, using the parameter as resulted from curve fitting.
+                           one or more columns for the simulated time series by the given model, using the parameters as resulted from curve fitting.
    
 ## Use cases on my BLog (German)
 Modelle zur Beschreibung der Ausbreitung des n-Coronavirus-2019: https://obsigna.com/articles/1586103085.html

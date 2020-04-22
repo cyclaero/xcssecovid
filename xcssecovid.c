@@ -111,7 +111,7 @@ int usage(const char *exe)
        <Country>           Select the country for which the time series shall be processed.\n\n\
        <CSV Input file>    Path to the CSSE@JHU's Covid-19 time series CSV file.\n\n\
        <TSV Output File>   Path to the TSV output file containing the extracted and transposed time series for the given <Country>, including\n\
-                           a column for a simulated time series by the given model, using the parameter as resulted from curve fitting.\n\n", exe);
+                           one ore more columns for the simulated time series by the given model, using the parameters as resulted from curve fitting.\n\n", exe);
    return usg_error;
 }
 
