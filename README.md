@@ -42,6 +42,7 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
                            - LDE  Logistic Differential Equation -- https://en.wikipedia.org/wiki/Logistic_function#Logistic_differential_equation
                            - SI   Epidemiological SI-Model (basically another form of the LDE) -- https://de.wikipedia.org/wiki/SI-Modell
                            - SIR  Epidemiological SIR-Model [default] -- https://en.wikipedia.org/wiki/Mathematical_modelling_of_infectious_disease#The_SIR_model
+                           - SEIR Epidemiological SEIR-Model -- https://www.idmod.org/docs/hiv/model-seir.html
                            - SIRX Extended SIR-Model by the HU/RKI -- http://rocs.hu-berlin.de/corona/docs/forecast/model/
                            - ERF  Shifted Error Function -- (generic form) https://en.wikipedia.org/wiki/Error_function
                            - GLF  Generalised Logistic Function -- https://en.wikipedia.org/wiki/Generalised_logistic_function

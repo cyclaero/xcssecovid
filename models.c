@@ -216,25 +216,86 @@ int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 }
 
 
+#pragma mark ••• SEIR Differential Equations •••
+
+char *modelDescription_SEIR =
+"# Model: SEIR Differential Equations\n"\
+"# S  dy0/dt = -a0/a1·y0·y1                  || y0(a7) = a1\n"\
+"# E  dy1/dt =  a0/a1·y0·y1 - a3·y1          || y1(a7) = a2\n"\
+"# I  dy2/dt =  a3·y1 - a4·y2                || y2(a7) = a5 <- a2·a3\n"\
+"# R  dy3/dt =  a4·y2                        || y3(a7) = a6 <- a2·a3·a4";
+
+int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
+{
+   if (isnan(A[0])) A[0] =  0.6L;            // beta  - infection rate
+   if (isnan(A[1])) A[1] =  2.0L*max;        // population
+   if (isnan(A[2])) A[2] = 10.0L*min;        // total number of exposed individuals at t1
+   if (isnan(A[3])) A[3] =  0.3L;            // sigma - incubation rate
+   if (isnan(A[4])) A[4] =  0.1L;            // gamma - recovery rate
+   if (isnan(A[5])) A[5] = A[2]*A[3];        // E(t1) boundary value at t1
+   if (isnan(A[6])) A[6] = A[2]*A[3]*A[4];   // R(t1) boundary value at t1
+   if (isnan(A[7])) A[7] = t1;
+
+   int i, k = 0;
+   for (i = 0; i < mpar; i++)
+      if (f[i] != undefined) k++;
+   if (k == 0)
+      f[k++] = 0, f[k++] = 1, f[k++] = 4;
+   return k;
+}
+
+static void seirdes(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
+{
+   dY[0] = -A[0]/A[1]*Y[0]*Y[1];             // dS/dt
+   dY[1] =  A[0]/A[1]*Y[0]*Y[1] - A[3]*Y[1]; // dE/dt
+   dY[2] =  A[3]*Y[1] - A[4]*Y[2];           // dI/dt
+   dY[3] =  A[4]*Y[2];                       // dR/dt
+}
+
+int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+{
+   int rc;
+
+   static ldouble t0;
+   static ldouble Y0[4];
+
+   if (init)
+   {
+      Y0[0] = A[1];
+      Y0[1] = A[2];
+      Y0[2] = A[5];
+      Y0[3] = A[6];
+      rc = ODEInt(4, A[7], t, Y0, A, seirdes);
+   }
+   else
+      rc = ODEInt(4, t0, t, Y0, A, seirdes);
+
+   t0 = t;
+   *Y = Y0[3];  // R - do the curve fit of R(t)
+
+   return rc;
+}
+
+
 #pragma mark ••• SIRX Differential Equations •••
 
 char *modelDescription_SIRX =
 "# Model: SIRX Differential Equations\n"\
-"# S  dy0/dt = -a0/a1·y0·y1 - a4·y0             || y0(a8) = a1\n"\
-"# I  dy1/dt =  a0/a1·y0·y1 - (a3 + a4 + a5)·y1 || y1(a8) = a2\n"\
-"# R  dy2/dt =  a3·y1 + a4·y0                   || y2(a8) = a6 <- a3·a2 + a4·a1\n"\
-"# X  dy3/dt =  (a4 + a5)·y1                    || y3(a8) = a7 <- (a4 + a5)·a2";
+"# S  dy0/dt = -a0/a1·y0·y1 - a4·y0                || y0(a8) = a1\n"\
+"# I  dy1/dt =  a0/a1·y0·y1 - (a3 + a4 + a5)·y1    || y1(a8) = a2\n"\
+"# R  dy2/dt =  a3·y1 + a4·y0                      || y2(a8) = a6 <- a3·a2 + a4·a1\n"\
+"# X  dy3/dt =  (a4 + a5)·y1                       || y3(a8) = a7 <- (a4 + a5)·a2";
 
 int initialValues_SIRX(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
 {
-   if (isnan(A[0])) A[0] = 0.6L;                  // alpha  - infection rate
-   if (isnan(A[1])) A[1] = 80.0e6L;               // population
-   if (isnan(A[2])) A[2] = 10.0L*min;             // total number of infectious individuals at t1
-   if (isnan(A[3])) A[3] = 0.38L;                 // beta   - removal rate
-   if (isnan(A[4])) A[4] = 0.001L;                // kappa0 - general containment rate (all)
-   if (isnan(A[5])) A[5] = 0.0005L;               // kappa  - quarantine rate (infected)
-   if (isnan(A[6])) A[6] = A[3]*A[2] + A[4]*A[1]; // R(t1) boundary value at t1
-   if (isnan(A[7])) A[7] = (A[4] + A[5])*A[2];    // X(t1) boundary value at t1
+   if (isnan(A[0])) A[0] =  0.6L;                  // alpha  - infection rate
+   if (isnan(A[1])) A[1] = 80.0e6L;                // population
+   if (isnan(A[2])) A[2] = 10.0L*min;              // total number of infectious individuals at t1
+   if (isnan(A[3])) A[3] =  0.38L;                 // beta   - removal rate
+   if (isnan(A[4])) A[4] =  0.001L;                // kappa0 - general containment rate (all)
+   if (isnan(A[5])) A[5] =  0.0005L;               // kappa  - quarantine rate (infected)
+   if (isnan(A[6])) A[6] = A[3]*A[2] + A[4]*A[1];  // R(t1) boundary value at t1
+   if (isnan(A[7])) A[7] = (A[4] + A[5])*A[2];     // X(t1) boundary value at t1
    if (isnan(A[8])) A[8] = t1;
 
    int i, k = 0;

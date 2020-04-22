@@ -95,6 +95,7 @@ int usage(const char *exe)
                            - LDE  Logistic Differential Equation -- https://en.wikipedia.org/wiki/Logistic_function#Logistic_differential_equation\n\
                            - SI   Epidemiological SI-Model (basically another form of the LDE) -- https://de.wikipedia.org/wiki/SI-Modell\n\
                            - SIR  Epidemiological SIR-Model [default] -- https://en.wikipedia.org/wiki/Mathematical_modelling_of_infectious_disease#The_SIR_model\n\
+                           - SEIR Epidemiological SEIR-Model -- https://www.idmod.org/docs/hiv/model-seir.html\n\
                            - SIRX Extension of the SIR-Model by the HU/RKI -- http://rocs.hu-berlin.de/corona/docs/forecast/model/\n\
                            - ERF  Shifted Error Function -- (generic form) https://en.wikipedia.org/wiki/Error_function\n\
                            - GLF  Generalised Logistic Function -- https://en.wikipedia.org/wiki/Generalised_logistic_function\n\n\
@@ -226,6 +227,13 @@ int main(int argc, char *const argv[])
 
                else if (*(uint32_t *)optarg == *(uint32_t *)"SIR")
                   ; // default, do nothing
+
+               else if (*(uint32_t *)optarg == *(uint32_t *)"SEIR" && optarg[4] == '\0')
+               {
+                  modelDescription = modelDescription_SEIR;
+                  initialValues = initialValues_SEIR;
+                  modelFunction = modelFunction_SEIR;
+               }
 
                else if (*(uint32_t *)optarg == *(uint32_t *)"SIRX" && optarg[4] == '\0')
                {
