@@ -416,7 +416,7 @@ int main(int argc, char *const argv[])
                   fprintf(tsv, "# %s", exe);
                   for (i = 1; i < argc; i++)
                      fprintf(tsv, " %s", argv[i]);
-                  fprintf(tsv, "\n#\n# %s\n", country);
+                  fprintf(tsv, "\n# %s\n", country);
 
                   if (do_simulation)
                   {
@@ -437,12 +437,12 @@ int main(int argc, char *const argv[])
                            fprintf(tsv, "%s\n#\n", modelDescription);
                            for (j = 0; j < mpar && isfinite(A[0][j]); j++)
                               if (dA[j] != 0.0L)
-                                 fprintf(tsv, "#      %c%d = %11.6Lg ± %.5Lg %%\n", 'a', j, A[0][j], dA[j]);
+                                 fprintf(tsv, "#     %c%d = %11.6Lg ± %.5Lg %%\n", 'a', j, A[0][j], dA[j]);
                               else
-                                 fprintf(tsv, "#      %c%d = %11.6Lg\n", 'a', j, A[0][j]);
+                                 fprintf(tsv, "#     %c%d = %11.6Lg\n", 'a', j, A[0][j]);
 
                            if (isfinite(chiSqr))
-                              fprintf(tsv, "#\n#  ChiSqr = %11.1Lf\n", chiSqr);
+                              fprintf(tsv, "#\n# ChiSqr = %11.1Lf\n", chiSqr);
                         }
 
                         else
@@ -467,12 +467,12 @@ int main(int argc, char *const argv[])
                                  fprintf(tsv, "#\n# Retropective curve fit #%d:\n%s\n#\n", h, modelDescription);
                                  for (j = 0; j < mpar && isfinite(A[h][j]); j++)
                                     if (dA[j] != 0.0L)
-                                       fprintf(tsv, "#      %c%d = %11.6Lg ± %.5Lg %%\n", 'a', j, A[h][j], dA[j]);
+                                       fprintf(tsv, "#     %c%d = %11.6Lg ± %.5Lg %%\n", 'a', j, A[h][j], dA[j]);
                                     else
-                                       fprintf(tsv, "#      %c%d = %11.6Lg\n", 'a', j, A[h][j]);
+                                       fprintf(tsv, "#     %c%d = %11.6Lg\n", 'a', j, A[h][j]);
 
                                  if (isfinite(chiSqr))
-                                    fprintf(tsv, "#\n#  ChiSqr = %11.1Lf\n", chiSqr);
+                                    fprintf(tsv, "#\n# ChiSqr = %11.1Lf\n", chiSqr);
                               }
 
                               else
@@ -492,7 +492,7 @@ int main(int argc, char *const argv[])
                               for (h = 0; h <= r; h++)
                                  Z[h] = A[h][j];
                               if (dA[j] != 0.0L)
-                                 fprintf(tsv, "#     s%c%d = %11.6Lg %%\n", 'a', j, sdev(r+1, Z)/aave(r+1, Z)*100.0L);
+                                 fprintf(tsv, "#    s%c%d = %11.6Lg %%\n", 'a', j, sdev(r+1, Z)/aave(r+1, Z)*100.0L);
                            }
                            free(Z);
                         }
