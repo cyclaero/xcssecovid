@@ -168,23 +168,24 @@ int modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 char *modelDescription_SIR =
 "# Model: SIR Differential Equations\n"\
 "# S  dy0/dt = -a0/a1·y0·y1            || y0(a5) = a1-a2-a4\n"\
-"# I  dy1/dt =  a0/a1·y0·y1 - a3·y1    || y1(a5) = a2\n"\
-"# R  dy2/dt =  a3·y1                  || y2(a5) = a4 <- a3·a2";
+"# I  dy1/dt =  a0/a1·y0·y1 - a3·y1    || y1(a5) = a2 <- a4/a3\n"\
+"# R  dy2/dt =  a3·y1                  || y2(a5) = a4";
 
 int initialValues_SIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
 {
-   if (isnan(A[0])) A[0] = 0.6L;
+   if (isnan(A[0])) A[0] = 0.4L;
    if (isnan(A[1])) A[1] = 2.0L*max;
-   if (isnan(A[2])) A[2] = 2.5L*min;
-   if (isnan(A[3])) A[3] = 0.4L;
-   if (isnan(A[4])) A[4] = A[3]*A[2];
+   if (isnan(A[3])) A[3] = 0.08L;
+   if (isnan(A[4])) A[4] = min;
    if (isnan(A[5])) A[5] = t1;
+
+   if (isnan(A[2])) A[2] = A[4]/A[3];
 
    int i, k = 0;
    for (i = 0; i < mpar; i++)
       if (f[i] != undefined) k++;
    if (k == 0)
-      f[k++] = 0, f[k++] = 1, f[k++] = 2;
+      f[k++] = 0, f[k++] = 1, f[k++] = 3;
    return k;
 }
 
@@ -225,16 +226,16 @@ int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 char *modelDescription_SEIR =
 "# Model: SEIR Differential Equations\n"\
 "# S  dy0/dt = -a0/a1·y0·y1            || y0(a7) = a1-a2-a5-a6\n"\
-"# E  dy1/dt =  a0/a1·y0·y1 - a3·y1    || y1(a7) = a2\n"\
+"# E  dy1/dt =  a0/a1·y0·y1 - a3·y1    || y1(a7) = a2 <- a6/a3/a4\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2          || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
-"# R  dy3/dt =  a4·y2                  || y3(a7) = a6 <- a4·a3·a2";
+"# R  dy3/dt =  a4·y2                  || y3(a7) = a6";
 
 int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
 {
-   if (isnan(A[0])) A[0] =  0.5L;                     // beta  - infection rate
-   if (isnan(A[1])) A[1] =  2.5L*max;                 // population
-   if (isnan(A[3])) A[3] =  0.33333L;                 // sigma - incubation rate (3 d until an infected individual becomes infectuous)
-   if (isnan(A[4])) A[4] =  0.1L;                     // gamma - removal rate (more 10 d until the infectuous individual can be removed from the chain of infection)
+   if (isnan(A[0])) A[0] =  0.6L;                     // beta  - infection rate
+   if (isnan(A[1])) A[1] =  2.0L*max;                 // population
+   if (isnan(A[3])) A[3] =  0.4L;                     // sigma - incubation rate  (2.5 d until an infected individual becomes infectuous)
+   if (isnan(A[4])) A[4] =  0.08L;                    // gamma - removal rate (more 12 d until the infectuous individual can be removed from the chain of infection)
    if (isnan(A[6])) A[6] =  min;                      // R(t1) boundary value at t1
    if (isnan(A[7])) A[7] =  t1;
 
@@ -245,7 +246,7 @@ int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], in
    for (i = 0; i < mpar; i++)
       if (f[i] != undefined) k++;
    if (k == 0)
-      f[k++] = 1, f[k++] = 2, f[k++] = 3;
+      f[k++] = 0, f[k++] = 1, f[k++] = 4;
    return k;
 }
 
