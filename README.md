@@ -1,5 +1,5 @@
 # xcssecovid
-Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country
+Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 case data per country
 
 ## Usage
 
@@ -25,7 +25,7 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
 
 `./xcssecovid -h`
 
-    Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country - Copyright Dr. Rolf Jansen (c) 2020 - Version 1.0.1
+    Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 case data per country - Copyright Dr. Rolf Jansen (c) 2020 - Version 1.0.3
     
     Usage: xcssecovid [-a<0-9> value] [-f (0-9)+] [-m model] [-e] [-i] [-s] [-o day#] [-z day#] [-r depth] [-h|-?|?] <Country> <CSV Input file> <TSV Output File>
 
@@ -61,7 +61,10 @@ Extract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 ca
        -z day#             The day# of the last data point in the imported time series to be included for curve fitting.
                            [default: last day of the imported series].
 
-       -r depth            Retrospective day by day curve fitting and simulation of the model back for depth number of days.
+       -q                  Output the time series of the whole set of the simulated differential equations of the given model along with the extracted CSSE@JHU's Covid-19 case data.\n\n\
+
+       -r depth            Retrospective day by day curve fitting and simulation of the model back for depth number of days.\n\
+                           (Note: the -q and -r options are mutually exclusive, the last option on the command line counts).\n\n\
 
        -h|-?|?             Show these usage instructions.
 

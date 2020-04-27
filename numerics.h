@@ -63,7 +63,7 @@ deq_error ODEInt(int m, ldouble t0, ldouble t, ldouble *Y, ldouble *A, odeset eq
 #define mpar 10
 
 typedef int (*initvals)(ldouble t1, ldouble min, ldouble max, ldouble *A, int *f);
-typedef int (*function)(ldouble t, ldouble *Y, ldouble *A, int *f, bool init);
+typedef int (*function)(ldouble t, ldouble *Y, ldouble *A, int *f, bool fit, bool init);
 ldouble curveFit(int n, ldouble *T, ldouble *Y,
                  int k, ldouble *A, ldouble *dA, int *f, function curve);
 

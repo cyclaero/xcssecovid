@@ -60,7 +60,7 @@
 #include "models.h"
 
 
-static const char *version = "Version 1.0.2";
+static const char *version = "Version 1.0.3";
 
 static inline const char *execname(const char *cmd)
 {
@@ -82,7 +82,7 @@ enum
 
 int usage(const char *exe)
 {
-   printf("\nExtract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 cases data per country - Copyright Dr. Rolf Jansen (c) 2020 - %s\n", version);
+   printf("\nExtract, curve fit an epidemiological model and transpose CSSE@JHU's Covid-19 case data per country - Copyright Dr. Rolf Jansen (c) 2020 - %s\n", version);
    printf("Usage: %s [-a<0-9> value] [-f (0-9)+] [-m model] [-e] [-i] [-s] [-o day#] [-z day#] [-r depth] [-h|-?|?] <Country> <CSV Input file> <TSV Output File>\n\n\
        -a<0..9> value      Optionally set initial values for the model's parameters the Differential Equation Solver and Curve Fitting.\n\
                            The models deduce its initial parameters from the boundaries of the imported time series and by common\n\
@@ -107,7 +107,9 @@ int usage(const char *exe)
                            [default: first day with more than <thresh> cases].\n\n\
        -z day#             The day# of the last data point in the imported time series to be included for curve fitting.\n\
                            [default: last day of the imported series].\n\n\
-       -r depth            Retrospective day by day curve fitting and simulation of the model back for depth number of days.\n\n\
+       -q                  Output the time series of the whole set of the simulated differential equations of the given model along with the extracted CSSE@JHU's Covid-19 case data.\n\n\
+       -r depth            Retrospective day by day curve fitting and simulation of the model back for depth number of days.\n\
+                           (Note: the -q and -r options are mutually exclusive, the last option on the command line counts).\n\n\
        -h|-?|?             Show these usage instructions.\n\n\
        <Country>           Select the country for which the time series shall be processed.\n\n\
        <CSV Input file>    Path to the CSSE@JHU's Covid-19 time series CSV file.\n\n\
@@ -136,13 +138,15 @@ int main(int argc, char *const argv[])
 
    const char *exe = execname(argv[0]);
 
+   char *model            = "SIR";
    char *modelDescription = modelDescription_SIR;
    initvals initialValues = initialValues_SIR;
    function modelFunction = modelFunction_SIR;
 
    bool do_simulation = true,
         do_curve_fit  = true,
-        export_series = true;
+        export_series = true,
+        diffeq_series = false;
 
    int     r = 0;
    ldouble o = NAN,
@@ -157,7 +161,7 @@ int main(int argc, char *const argv[])
 
    bool aopt = false;
    int  opc;
-   while ((opc = getopt(argc, argv, "af:0:1:2:3:4:5:6:7:8:9:m:eist:o:r:z:h?")) != -1)
+   while ((opc = getopt(argc, argv, "af:0:1:2:3:4:5:6:7:8:9:m:eist:o:qr:z:h?")) != -1)
    {
       char   *chk, c;
       int     i;
@@ -206,6 +210,7 @@ int main(int argc, char *const argv[])
             if (optarg && *optarg)
                if (*(uint16_t *)optarg == *(uint16_t *)"LF" && optarg[2] == '\0')
                {
+                  model = "LF";
                   modelDescription = modelDescription_LF;
                   initialValues = initialValues_LF;
                   modelFunction = modelFunction_LF;
@@ -213,6 +218,7 @@ int main(int argc, char *const argv[])
 
                else if (*(uint32_t *)optarg == *(uint32_t *)"LDE")
                {
+                  model = "LDE";
                   modelDescription = modelDescription_LDE;
                   initialValues = initialValues_LDE;
                   modelFunction = modelFunction_LDE;
@@ -220,6 +226,7 @@ int main(int argc, char *const argv[])
 
                else if (*(uint16_t *)optarg == *(uint16_t *)"SI" && optarg[2] == '\0')
                {
+                  model = "SI";
                   modelDescription = modelDescription_SI;
                   initialValues = initialValues_SI;
                   modelFunction = modelFunction_SI;
@@ -230,6 +237,7 @@ int main(int argc, char *const argv[])
 
                else if (*(uint32_t *)optarg == *(uint32_t *)"SEIR" && optarg[4] == '\0')
                {
+                  model = "SEIR";
                   modelDescription = modelDescription_SEIR;
                   initialValues = initialValues_SEIR;
                   modelFunction = modelFunction_SEIR;
@@ -237,6 +245,7 @@ int main(int argc, char *const argv[])
 
                else if (*(uint32_t *)optarg == *(uint32_t *)"SIRX" && optarg[4] == '\0')
                {
+                  model = "SIRX";
                   modelDescription = modelDescription_SIRX;
                   initialValues = initialValues_SIRX;
                   modelFunction = modelFunction_SIRX;
@@ -244,6 +253,7 @@ int main(int argc, char *const argv[])
 
                else if (*(uint16_t *)optarg == *(uint16_t *)"ERF")
                {
+                  model = "ERF";
                   modelDescription = modelDescription_ERF;
                   initialValues = initialValues_ERF;
                   modelFunction = modelFunction_ERF;
@@ -251,6 +261,7 @@ int main(int argc, char *const argv[])
 
                else if (*(uint16_t *)optarg == *(uint16_t *)"GLF")
                {
+                  model = "GLF";
                   modelDescription = modelDescription_GLF;
                   initialValues = initialValues_GLF;
                   modelFunction = modelFunction_GLF;
@@ -294,9 +305,13 @@ int main(int argc, char *const argv[])
                return usage(exe);
             break;
 
+         case 'q':
+            r = 0, diffeq_series  = true;
+            break;
+
          case 'r':
             if (optarg && *optarg && (l = strtol(optarg, NULL, 10)) > 0)
-               r = (int)l;
+               diffeq_series = false, r = (int)l;
             else
                return usage(exe);
             break;
@@ -499,56 +514,92 @@ int main(int argc, char *const argv[])
                      }
 
                      if (rc == no_error && export_series)
-                     {
-                        // write the column header with formular symbols and units.
-                        // - the formular symbol of time is 't', the unit symbol of day is 'd'
-                        // - the formular symbol of the number of cases is C without a unit
-                        // - the formular symbol of the siumulated model is L without a unit
-                        fprintf(tsv, "t/d\tC\tL");
-                        if (!r)
-                           fprintf(tsv, "\n");
-                        else
+                        if (diffeq_series)
                         {
-                           for (h = 0; h < r; h++)
-                              fprintf(tsv, "%d\tL", h);
-                           fprintf(tsv, "%d\n", h);
-                        }
+                           // write the column header with formular symbols and units.
+                           // - the formular symbol of time is 't', the unit symbol of day is 'd'
+                           // - the formular symbol of the number of cases is C without a unit
+                           // - the formular symbol of the siumulated model is L without a unit
+                           fprintf(tsv, "t/d\tC");
+                           for (k = 0; model[k]; k++)
+                              fprintf(tsv, "\t%c", model[k]);
+                           fprintf(tsv, "\n");
 
-                        for (h = 0; h <= r; h++)
+                           ldouble *Y = calloc(k+1, sizeof(ldouble));
+
                            for (i = 0; i < ndays; i++)
                            {
                               if (i >= m)
-                              {
-                                 if (modelFunction(t[i], &l[h][i], A[h], f, i == m) != no_error)
+                                 if (modelFunction(t[i], Y, A[0], f, false, i == m) != no_error)
                                     goto sim_err_out;
-                              }
+
+                              if (isfinite(c[i]))
+                                 fprintf(tsv, "%.0Lf\t%.0Lf", t[i], c[i]);
                               else
-                                 l[h][i] = 0.0L;
+                                 fprintf(tsv, "%.0Lf\t*",     t[i]);
+
+                              for (h = 0; h < k; h++)
+                                 if (isfinite(Y[h]))
+                                    fprintf(tsv, "\t%.0Lf",   Y[h]);
+                                 else
+                                    fprintf(tsv, "\t*");
+                              fprintf(tsv, "\n");
                            }
 
-                        for (i = 0; i < ndays; i++)
-                        {
-                           if (isfinite(c[i]))
-                              fprintf(tsv, "%.0Lf\t%.0Lf", t[i], c[i]);
-                           else
-                              fprintf(tsv, "%.0Lf\t*",     t[i]);
-
-                           for (h = 0; h <= r; h++)
-                              if (isfinite(l[h][i]))
-                                 fprintf(tsv, "\t%.0Lf",   l[h][i]);
-                              else
-                                 fprintf(tsv, "\t*");
-                           fprintf(tsv, "\n");
+                           free(Y);
                         }
 
-                        goto cleanup;
+                        else
+                        {
+                           // write the column header with formular symbols and units.
+                           // - the formular symbol of time is 't', the unit symbol of day is 'd'
+                           // - the formular symbol of the number of cases is C without a unit
+                           // - the formular symbol of the siumulated model is L without a unit
+                           fprintf(tsv, "t/d\tC\tL");
+                           if (!r)
+                              fprintf(tsv, "\n");
+                           else
+                           {
+                              for (h = 0; h < r; h++)
+                                 fprintf(tsv, "%d\tL", h);
+                              fprintf(tsv, "%d\n", h);
+                           }
 
-                     sim_err_out:
-                        fprintf(tsv,
-                             "# Simulation failed\n");
-                        printf("Simulation failed\n");
-                        rc = sim_error;
-                     }
+                           for (h = 0; h <= r; h++)
+                              for (i = 0; i < ndays; i++)
+                              {
+                                 if (i >= m)
+                                 {
+                                    if (modelFunction(t[i], &l[h][i], A[h], f, true, i == m) != no_error)
+                                       goto sim_err_out;
+                                 }
+                                 else
+                                    l[h][i] = 0.0L;
+                              }
+
+                           for (i = 0; i < ndays; i++)
+                           {
+                              if (isfinite(c[i]))
+                                 fprintf(tsv, "%.0Lf\t%.0Lf", t[i], c[i]);
+                              else
+                                 fprintf(tsv, "%.0Lf\t*",     t[i]);
+
+                              for (h = 0; h <= r; h++)
+                                 if (isfinite(l[h][i]))
+                                    fprintf(tsv, "\t%.0Lf",   l[h][i]);
+                                 else
+                                    fprintf(tsv, "\t*");
+                              fprintf(tsv, "\n");
+                           }
+
+                           goto cleanup;
+
+                        sim_err_out:
+                           fprintf(tsv,
+                                "# Simulation failed\n");
+                           printf("Simulation failed\n");
+                           rc = sim_error;
+                        }
 
                   cleanup:
                      if (A)
