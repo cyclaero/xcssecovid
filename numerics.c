@@ -221,13 +221,14 @@ deq_error ODEInt(int m, ldouble t1, ldouble t2, ldouble *Y, ldouble *A, odeset m
 // https://en.wikipedia.org/wiki/Levenberg–Marquardt_algorithm
 
 ldouble calcChiSqr(int n, ldouble *T, ldouble *Y,
-                   int k, ldouble *A, function curve)
+                   int k, ldouble *A, int *f,
+                   function curve)
 {
    ldouble yi, chiSqr = 0.0L;
 
    for (int i = 0; i < n; i++)
    {
-      curve(T[i], &yi, A, i == 0);
+      curve(T[i], &yi, A, f, i == 0);
       chiSqr += sqrl(yi - Y[i]);
    }
 
@@ -259,14 +260,14 @@ ldouble calcGradientCurvature(int n, ldouble *T, ldouble *Y,
       ap = A[f[p]], A[f[p]] += dA[p];
 
       for (i = 0; i < n; i++)
-         curve(T[i], &V[p][i], A, i == 0);
+         curve(T[i], &V[p][i], A, f, i == 0);
 
       A[f[p]] = ap;
    }
 
    for (i = 0; i < n; i++)
    {
-      curve(T[i], &yi, A, i == 0);
+      curve(T[i], &yi, A, f, i == 0);
       for (p = 0; p < k; p++)
       {
          dYdA = (V[p][i] - yi)/dA[p];
@@ -315,7 +316,8 @@ ldouble ERelNorm(int m, ldouble *B, ldouble *R)
 }
 
 ldouble curveFit(int n, ldouble *T, ldouble *Y,
-                 int k, ldouble *A, ldouble *dA, int *f, function curve)
+                 int k, ldouble *A, ldouble *dA, int *f,
+                 function curve)
 {
    #define rtol 1.0e-9L
    #define atol 1.0e-12L
@@ -340,7 +342,7 @@ ldouble curveFit(int n, ldouble *T, ldouble *Y,
       alphaLU[j] = calloc(k, sizeof(ldouble));
    }
 
-   chiSqr = calcChiSqr(n, T, Y, k, A, curve);
+   chiSqr = calcChiSqr(n, T, Y, k, A, f, curve);
    do
    {
       iter++;
@@ -358,7 +360,7 @@ ldouble curveFit(int n, ldouble *T, ldouble *Y,
          C[j] = B[j], B[j] -= delta[j], A[f[j]] = B[j];
 
       chiSqr0 = chiSqr;
-      chiSqr  = calcChiSqr(n, T, Y, k, A, curve);
+      chiSqr  = calcChiSqr(n, T, Y, k, A, f, curve);
       dChiSqr = chiSqr - chiSqr0;
       revoke  = isnan(dChiSqr) || dChiSqr > 0.0L || fabsl(dChiSqr) <= __LDBL_EPSILON__;
 

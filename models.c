@@ -54,7 +54,7 @@ int initialValues_LF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int 
    return k;
 }
 
-int modelFunction_LF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_LF(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool init)
 {
    *Y = A[1]/(1 + expl(-A[0]*(t - A[2])));
    return 0;
@@ -88,7 +88,7 @@ static void lde(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    *dY = A[0]**Y*(1 - *Y/A[1]);
 }
 
-int modelFunction_LDE(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_LDE(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool init)
 {
    int rc;
 
@@ -139,7 +139,7 @@ static void sides(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    dY[1] =  A[0]/A[1]*Y[0]*Y[1];    // dI/dt
 }
 
-int modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_SI(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool init)
 {
    int rc;
 
@@ -196,7 +196,7 @@ static void sirdes(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    dY[2] =  A[3]*Y[1];                          // dR/dt
 }
 
-int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool init)
 {
    int rc;
 
@@ -205,6 +205,14 @@ int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
    if (init)
    {
+      bool isvar2 = false;
+
+      for (int i = 0; i < mpar && f[i] != undefined; i++)
+         if (f[i] == 2)
+            isvar2 = true;
+
+      if (!isvar2) A[2] = A[4]/A[3];
+
       Y0[0] = A[1] - A[2] - A[4];
       Y0[1] = A[2];
       Y0[2] = A[4];
@@ -258,7 +266,7 @@ static void seirdes(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    dY[3] =  A[4]*Y[2];                                // dR/dt
 }
 
-int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool init)
 {
    int rc;
 
@@ -267,6 +275,18 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
 
    if (init)
    {
+      bool isvar2 = false,
+           isvar5 = false;
+
+      for (int i = 0; i < mpar && f[i] != undefined; i++)
+         if (f[i] == 2)
+            isvar2 = true;
+         else if (f[i] == 5)
+            isvar5 = true;
+
+      if (!isvar2) A[2] = A[6]/A[4]/A[3];
+      if (!isvar5) A[5] = (1.0L - A[4])*A[3]*A[2];
+
       Y0[0] = A[1] - A[2] - A[5] - A[6];
       Y0[1] = A[2];
       Y0[2] = A[5];
@@ -321,7 +341,7 @@ static void sirxdes(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    dY[3] =  (A[4] + A[5])*Y[1];                                // dX/dt
 }
 
-int modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool init)
 {
    int rc;
 
@@ -369,7 +389,7 @@ int initialValues_ERF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
    return k;
 }
 
-int modelFunction_ERF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_ERF(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool init)
 {
    *Y = 0.5*A[1]*(1 + erfl(A[0]*(t - A[2])));
    return 0;
@@ -398,7 +418,7 @@ int initialValues_GLF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
    return k;
 }
 
-int modelFunction_GLF(ldouble t, ldouble *Y, ldouble A[mpar], bool init)
+int modelFunction_GLF(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool init)
 {
    *Y = A[1]/powl(1 + expl(-A[0]*A[3]*(t - A[2])), 1/A[3]);
    return 0;

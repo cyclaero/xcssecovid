@@ -519,7 +519,7 @@ int main(int argc, char *const argv[])
                            {
                               if (i >= m)
                               {
-                                 if (modelFunction(t[i], &l[h][i], A[h], i == m) != no_error)
+                                 if (modelFunction(t[i], &l[h][i], A[h], f, i == m) != no_error)
                                     goto sim_err_out;
                               }
                               else
