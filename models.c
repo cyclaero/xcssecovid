@@ -246,8 +246,8 @@ int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool 
 // https://www.idmod.org/docs/hiv/model-seir.html
 char *modelDescription_SEIR =
 "# Model: SEIR Differential Equations\n"\
-"# S  dy0/dt = -a0/a1·y0·y1            || y0(a7) = a1-a2-a5-a6\n"\
-"# E  dy1/dt =  a0/a1·y0·y1 - a3·y1    || y1(a7) = a2 <- a6/a4/a3\n"\
+"# S  dy0/dt = -a0/a1·y0·y2            || y0(a7) = a1-a2-a5-a6\n"\
+"# E  dy1/dt =  a0/a1·y0·y2 - a3·y1    || y1(a7) = a2 <- a6/a4/a3\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2          || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
 "# R  dy3/dt =  a4·y2                  || y3(a7) = a6";
 
@@ -273,8 +273,8 @@ int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], in
 
 static void seirdes(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
 {
-   dY[0] = -A[0]/A[1]*Y[0]*Y[1];                      // dS/dt
-   dY[1] =  A[0]/A[1]*Y[0]*Y[1] - A[3]*Y[1];          // dE/dt
+   dY[0] = -A[0]/A[1]*Y[0]*Y[2];                      // dS/dt
+   dY[1] =  A[0]/A[1]*Y[0]*Y[2] - A[3]*Y[1];          // dE/dt
    dY[2] =  A[3]*Y[1] - A[4]*Y[2];                    // dI/dt
    dY[3] =  A[4]*Y[2];                                // dR/dt
 }
