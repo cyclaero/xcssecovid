@@ -519,7 +519,7 @@ int main(int argc, char *const argv[])
                            // write the column header with formular symbols and units.
                            // - the formular symbol of time is 't', the unit symbol of day is 'd'
                            // - the formular symbol of the number of cases is C without a unit
-                           // - the formular symbol of the siumulated model is L without a unit
+                           // - the formular symbol of the siumulated model is deduced from the model's name
                            fprintf(tsv, "t/d\tC");
                            for (k = 0; model[k]; k++)
                               fprintf(tsv, "\t%c", model[k]);
@@ -538,11 +538,8 @@ int main(int argc, char *const argv[])
                               else
                                  fprintf(tsv, "%.0Lf\t*",     t[i]);
 
-                              for (h = 0; h < k; h++)
-                                 if (isfinite(Y[h]))
-                                    fprintf(tsv, "\t%.0Lf",   Y[h]);
-                                 else
-                                    fprintf(tsv, "\t*");
+                              for (h = 0; h < k && isfinite(Y[h]); h++)
+                                 fprintf(tsv, "\t%.0Lf",   Y[h]);
                               fprintf(tsv, "\n");
                            }
 
