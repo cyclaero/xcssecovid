@@ -161,7 +161,7 @@ int main(int argc, char *const argv[])
 
    bool aopt = false;
    int  opc;
-   while ((opc = getopt(argc, argv, "af:0:1:2:3:4:5:6:7:8:9:m:eist:o:qr:z:h?")) != -1)
+   while ((opc = getopt(argc, argv, "a0:1:2:3:4:5:6:7:8:9:f:m:eist:o:qr:z:h?")) != -1)
    {
       char   *chk, c;
       int     i;
@@ -176,19 +176,6 @@ int main(int argc, char *const argv[])
             aopt = true;
             break;
 
-         case 'f':
-            if (optarg && *optarg)
-            {
-               for (i = 0; c = *optarg; optarg++)
-                  if ('0' <= c && c <= '9' && f[i] == -1)
-                     f[i++] = c - '0';
-                  else
-                     return usage(exe);
-            }
-            else
-               return usage(exe);
-            break;
-
          case '0' ... '9':
             if (aopt && optarg && *optarg)
             {
@@ -201,6 +188,19 @@ int main(int argc, char *const argv[])
                }
                else
                   return usage(exe);
+            }
+            else
+               return usage(exe);
+            break;
+
+         case 'f':
+            if (optarg && *optarg)
+            {
+               for (i = 0; c = *optarg; optarg++)
+                  if ('0' <= c && c <= '9' && f[i] == -1)
+                     f[i++] = c - '0';
+                  else
+                     return usage(exe);
             }
             else
                return usage(exe);
