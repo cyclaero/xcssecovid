@@ -257,7 +257,7 @@ char *modelDescription_SEIR =
 
 int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
 {
-   if (isnan(A[0])) A[0] =  0.6L;                     // beta  - infection rate
+   if (isnan(A[0])) A[0] =  0.5L;                     // beta  - infection rate
    if (isnan(A[1])) A[1] =  2.0L*max;                 // virtual population
    if (isnan(A[3])) A[3] =  0.4L;                     // sigma - incubation rate  (2.5 d (latency) until an infected individual becomes infectuous)
    if (isnan(A[4])) A[4] =  0.1L;                     // gamma - removal rate (more 10 d until the infectuous individual can be removed from the chain of infection)
