@@ -271,7 +271,7 @@ int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], in
    for (i = 0; i < mpar; i++)
       if (f[i] != undefined) k++;
    if (k == 0)
-      f[k++] = 0, f[k++] = 1, f[k++] = 4;
+      f[k++] = 0, f[k++] = 1, f[k++] = 2;
 
    return k;
 }
