@@ -51,6 +51,7 @@ int initialValues_LF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int 
       if (f[i] != undefined) k++;
    if (k == 0)
       f[k++] = 0, f[k++] = 1, f[k++] = 2;
+
    return k;
 }
 
@@ -80,6 +81,7 @@ int initialValues_LDE(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
       if (f[i] != undefined) k++;
    if (k == 0)
       f[k++] = 0, f[k++] = 1, f[k++] = 2;
+
    return k;
 }
 
@@ -130,6 +132,7 @@ int initialValues_SI(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int 
       if (f[i] != undefined) k++;
    if (k == 0)
       f[k++] = 0, f[k++] = 1, f[k++] = 2;
+
    return k;
 }
 
@@ -192,6 +195,7 @@ int initialValues_SIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
       if (f[i] != undefined) k++;
    if (k == 0)
       f[k++] = 0, f[k++] = 1, f[k++] = 3;
+
    return k;
 }
 
@@ -254,9 +258,9 @@ char *modelDescription_SEIR =
 int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
 {
    if (isnan(A[0])) A[0] =  0.6L;                     // beta  - infection rate
-   if (isnan(A[1])) A[1] =  2.0L*max;                 // population
-   if (isnan(A[3])) A[3] =  0.4L;                     // sigma - incubation rate  (2.5 d until an infected individual becomes infectuous)
-   if (isnan(A[4])) A[4] =  0.08L;                    // gamma - removal rate (more 12 d until the infectuous individual can be removed from the chain of infection)
+   if (isnan(A[1])) A[1] =  2.0L*max;                 // virtual population
+   if (isnan(A[3])) A[3] =  0.4L;                     // sigma - incubation rate  (2.5 d (latency) until an infected individual becomes infectuous)
+   if (isnan(A[4])) A[4] =  0.1L;                     // gamma - removal rate (more 10 d until the infectuous individual can be removed from the chain of infection)
    if (isnan(A[6])) A[6] =  min;                      // R(t1) boundary value at t1
    if (isnan(A[7])) A[7] =  t1;
 
@@ -268,6 +272,7 @@ int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], in
       if (f[i] != undefined) k++;
    if (k == 0)
       f[k++] = 0, f[k++] = 1, f[k++] = 4;
+
    return k;
 }
 
@@ -351,6 +356,7 @@ int initialValues_SIRX(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], in
       if (f[i] != undefined) k++;
    if (k == 0)
       f[k++] = 2, f[k++] = 4, f[k++] = 5;
+
    return k;
 }
 
@@ -414,6 +420,7 @@ int initialValues_ERF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
       if (f[i] != undefined) k++;
    if (k == 0)
       f[k++] = 0, f[k++] = 1, f[k++] = 2;
+
    return k;
 }
 
@@ -443,6 +450,7 @@ int initialValues_GLF(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int
       if (f[i] != undefined) k++;
    if (k == 0)
       f[k++] = 0, f[k++] = 1, f[k++] = 2;
+
    return k;
 }
 
