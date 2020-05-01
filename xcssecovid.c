@@ -456,8 +456,7 @@ int main(int argc, char *const argv[])
                               else
                                  fprintf(tsv, "#     %c%d = %11.6Lg\n", 'a', j, A[0][j]);
 
-                           if (isfinite(chiSqr))
-                              fprintf(tsv, "#\n# ChiSqr = %11.1Lf\n", chiSqr);
+                           fprintf(tsv, "#\n# ChiSqr = %11.1Lf\n", chiSqr);
                         }
 
                         else
@@ -486,8 +485,7 @@ int main(int argc, char *const argv[])
                                     else
                                        fprintf(tsv, "#     %c%d = %11.6Lg\n", 'a', j, A[h][j]);
 
-                                 if (isfinite(chiSqr))
-                                    fprintf(tsv, "#\n# ChiSqr = %11.1Lf\n", chiSqr);
+                                 fprintf(tsv, "#\n# ChiSqr = %11.1Lf\n", chiSqr);
                               }
 
                               else
@@ -511,6 +509,14 @@ int main(int argc, char *const argv[])
                            }
                            free(Z);
                         }
+                     }
+
+                     else
+                     {
+                        fprintf(tsv, "%s\n#\n", modelDescription);
+                        for (j = 0; j < mpar && isfinite(A[0][j]); j++)
+                           fprintf(tsv, "#     %c%d = %11.6Lg\n", 'a', j, A[0][j]);
+                        fprintf(tsv, "#\n");
                      }
 
                      if (rc == no_error && export_series)
