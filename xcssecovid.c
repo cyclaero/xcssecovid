@@ -431,7 +431,7 @@ int main(int argc, char *const argv[])
                   fprintf(tsv, "# %s", exe);
                   for (i = 1; i < argc; i++)
                      fprintf(tsv, " %s", argv[i]);
-                  fprintf(tsv, "\n# %s\n", country);
+                  fprintf(tsv, "\n# %s\n# Time base:   1 d\n", country);
 
                   if (do_simulation)
                   {
