@@ -250,7 +250,7 @@ int modelFunction_SIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool 
 // https://www.idmod.org/docs/hiv/model-seir.html
 char *modelDescription_SEIR =
 "# Model: SEIR Differential Equations\n"\
-"# S  dy0/dt = -a0/a1·y0·y2            || y0(a7) = a1-a2-a5-a6\n"\
+"# S  dy0/dt = -a0/a1·y0·y2 + a8/y0    || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  a0/a1·y0·y2 - a3·y1    || y1(a7) = a2 <- a6/a4/a3\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2          || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
 "# R  dy3/dt =  a4·y2                  || y3(a7) = a6";
@@ -258,11 +258,12 @@ char *modelDescription_SEIR =
 int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
 {
    if (isnan(A[0])) A[0] =  0.5L;                     // beta  - infection rate
-   if (isnan(A[1])) A[1] =  2.0L*max;                 // virtual population
+   if (isnan(A[1])) A[1] =  max;                      // VSP   - Virtual Susceptible Population
    if (isnan(A[3])) A[3] =  0.4L;                     // sigma - incubation rate  (2.5 d (latency) until an infected individual becomes infectious)
    if (isnan(A[4])) A[4] =  0.0625L;                  // gamma - removal rate (more 16 d until the infectious individual can be removed from the chain of infection)
    if (isnan(A[6])) A[6] =  min;                      // R(t1) boundary value at t1
    if (isnan(A[7])) A[7] =  t1;
+   if (isnan(A[8])) A[8] =  0.0;                      // d·TP  - diffusion constant x Total Population, for example 0.05*80e6 = 4000000
 
    if (isnan(A[2])) A[2] = A[6]/A[4]/A[3];            // total number of exposed individuals at t1
    if (isnan(A[5])) A[5] = (1.0L - A[4])*A[3]*A[2];   // I(t1) boundary value at t1
@@ -278,7 +279,7 @@ int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], in
 
 static void seirdes(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
 {
-   dY[0] = -A[0]/A[1]*Y[0]*Y[2];                      // dS/dt
+   dY[0] = -A[0]/A[1]*Y[0]*Y[2] + A[8]/Y[0];          // dS/dt
    dY[1] =  A[0]/A[1]*Y[0]*Y[2] - A[3]*Y[1];          // dE/dt
    dY[2] =  A[3]*Y[1] - A[4]*Y[2];                    // dI/dt
    dY[3] =  A[4]*Y[2];                                // dR/dt
