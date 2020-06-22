@@ -341,6 +341,16 @@ int main(int argc, char *const argv[])
    size_t cl = strlen(country);
 
    if (*country)
+   {
+      if (*(uint32_t *)model   == *(uint32_t *)"SEIR" && model[4] == '\0'
+       && *(uint64_t *)country == *(uint64_t *)"Germany")
+      {
+         model = "SEIR_de";
+         modelDescription = modelDescription_SEIR_de;
+         initialValues = initialValues_SEIR_de;
+         modelFunction = modelFunction_SEIR_de;
+      }
+
       if (csv = (*(uint16_t *)argv[optind+1] == *(uint16_t *)"-")
                 ? stdin
                 : fopen(argv[optind+1], "r"))
@@ -668,6 +678,7 @@ int main(int argc, char *const argv[])
          printf("Input file %s not found.\n", argv[optind+1]);
          rc = fs_error;
       }
+   }
 
    return rc;
 }

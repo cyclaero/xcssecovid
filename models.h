@@ -46,6 +46,10 @@ extern char *modelDescription_SEIR;
 int initialValues_SEIR(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
 int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool fit, bool init);
 
+extern char *modelDescription_SEIR_de;
+int initialValues_SEIR_de(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
+int modelFunction_SEIR_de(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool fit, bool init);
+
 extern char *modelDescription_SIRX;
 int initialValues_SIRX(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar]);
 int modelFunction_SIRX(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool fit, bool init);

@@ -330,6 +330,92 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool
 }
 
 
+char *modelDescription_SEIR_de =
+"# Model: SEIR Differential Equations\n"\
+"# || f = 1\n"\
+"# || f = 3  if 137 < t and t < 145\n"\
+"# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0    || y0(a7) = a1-a2-a5-a6\n"\
+"# E  dy1/dt =  f·a0/a1·y0·y2 - a3·y1    || y1(a7) = a2 <- a6/a4/a3\n"\
+"# I  dy2/dt =  a3·y1 - a4·y2            || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
+"# R  dy3/dt =  a4·y2                    || y3(a7) = a6";
+
+int initialValues_SEIR_de(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
+{
+   if (isnan(A[0])) A[0] =  0.5L;                     // beta  - infection rate
+   if (isnan(A[1])) A[1] =  2.0L*max;                 // VSP   - Virtual Susceptible Population
+   if (isnan(A[3])) A[3] =  0.4L;                     // sigma - incubation rate  (2.5 d (latency) until an infected individual becomes infectious)
+   if (isnan(A[4])) A[4] =  0.0625L;                  // gamma - removal rate (more 16 d until the infectious individual can be removed from the chain of infection)
+   if (isnan(A[6])) A[6] =  min;                      // R(t1) boundary value at t1
+   if (isnan(A[7])) A[7] =  t1;
+   if (isnan(A[8])) A[8] =  0.0L;                     // d·TP  - diffusion constant x Total Population, for example 0.05*80e6 = 4000000
+
+   if (isnan(A[2])) A[2] = A[6]/A[4]/A[3];            // total number of exposed individuals at t1
+   if (isnan(A[5])) A[5] = (1.0L - A[4])*A[3]*A[2];   // I(t1) boundary value at t1
+
+   int i, k = 0;
+   for (i = 0; i < mpar; i++)
+      if (f[i] != undefined) k++;
+   if (k == 0)
+      f[k++] = 0, f[k++] = 1, f[k++] = 2;
+
+   return k;
+}
+
+static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
+{
+   ldouble f = (137.0L <= t && t <= 145.0L) ? 3.0L : 1.0L;
+
+   dY[0] = -f*A[0]/A[1]*Y[0]*Y[2] + A[8]/Y[0];        // dS/dt
+   dY[1] =  f*A[0]/A[1]*Y[0]*Y[2] - A[3]*Y[1];        // dE/dt
+   dY[2] =    A[3]*Y[1] - A[4]*Y[2];                  // dI/dt
+   dY[3] =    A[4]*Y[2];                              // dR/dt
+}
+
+int modelFunction_SEIR_de(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool fit, bool init)
+{
+   int rc;
+
+   static ldouble t0;
+   static ldouble Y0[4];
+
+   if (init)
+   {
+      bool isvar2 = false,
+           isvar5 = false;
+
+      for (int i = 0; i < mpar && f[i] != undefined; i++)
+         if (f[i] == 2)
+            isvar2 = true;
+         else if (f[i] == 5)
+            isvar5 = true;
+
+      if (!isvar2) A[2] = A[6]/A[4]/A[3];
+      if (!isvar5) A[5] = (1.0L - A[4])*A[3]*A[2];
+
+      Y0[0] = A[1] - A[2] - A[5] - A[6];
+      Y0[1] = A[2];
+      Y0[2] = A[5];
+      Y0[3] = A[6];
+      rc = ODEInt(4, A[7], t, Y0, A, seirdes_de);
+   }
+   else
+      rc = ODEInt(4, t0, t, Y0, A, seirdes_de);
+
+   t0 = t;
+
+   if (fit)
+      *Y = Y0[3];  // R - curve fit of R(t)
+   else
+      Y[0] = Y0[0],
+      Y[1] = Y0[1],
+      Y[2] = Y0[2],
+      Y[3] = Y0[3],
+      Y[4] = NAN;
+
+   return rc;
+}
+
+
 #pragma mark ••• SIRX Differential Equations •••
 
 // http://rocs.hu-berlin.de/corona/docs/forecast/model/
