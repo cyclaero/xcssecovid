@@ -332,8 +332,8 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool
 
 char *modelDescription_SEIR_de =
 "# Model: SEIR Differential Equations\n"\
-"# || f =  1\n"\
-"# || f = 10  if 143 <= t and t <= 147\n"\
+"# || f = 1\n"\
+"# || f = 9  if 143 <= t and t <= 147\n"\
 "# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0    || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  f·a0/a1·y0·y2 - a3·y1    || y1(a7) = a2 <- a6/a4/a3\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2            || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
