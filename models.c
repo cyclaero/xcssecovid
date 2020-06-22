@@ -332,8 +332,8 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool
 
 char *modelDescription_SEIR_de =
 "# Model: SEIR Differential Equations\n"\
-"# || f = 1\n"\
-"# || f = 3  if 137 < t and t < 145\n"\
+"# || f =  1\n"\
+"# || f = 10  if 143 <= t and t <= 147\n"\
 "# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0    || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  f·a0/a1·y0·y2 - a3·y1    || y1(a7) = a2 <- a6/a4/a3\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2            || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
@@ -363,8 +363,8 @@ int initialValues_SEIR_de(ldouble t1, ldouble min, ldouble max, ldouble A[mpar],
 
 static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
 {
-   ldouble f = (137.0L < t && t < 145.0L)             // f is an acceleration factor
-             ? 3.0L                                   // which serves to model local outbreaks
+   ldouble f = (143.0L <= t && t <= 147.0L)           // f is an acceleration factor
+             ? 9.0L                                   // which serves to model local outbreaks
              : 1.0L;                                  // 1 = no acceleration
 
    dY[0] = -f*A[0]/A[1]*Y[0]*Y[2] + A[8]/Y[0];        // dS/dt
