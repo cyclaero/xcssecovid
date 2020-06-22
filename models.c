@@ -363,7 +363,9 @@ int initialValues_SEIR_de(ldouble t1, ldouble min, ldouble max, ldouble A[mpar],
 
 static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
 {
-   ldouble f = (137.0L <= t && t <= 145.0L) ? 3.0L : 1.0L;
+   ldouble f = (137.0L <= t && t <= 145.0L)           // f is an acceleration factor
+             ? 3.0L                                   // which serves to model local outbreaks
+             : 1.0L;                                  // 1 = no acceleration
 
    dY[0] = -f*A[0]/A[1]*Y[0]*Y[2] + A[8]/Y[0];        // dS/dt
    dY[1] =  f*A[0]/A[1]*Y[0]*Y[2] - A[3]*Y[1];        // dE/dt
