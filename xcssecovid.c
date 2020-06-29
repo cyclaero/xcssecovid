@@ -345,7 +345,6 @@ int main(int argc, char *const argv[])
       if (*(uint32_t *)model   == *(uint32_t *)"SEIR" && model[4] == '\0'
        && *(uint64_t *)country == *(uint64_t *)"Germany")
       {
-         model = "SEIR_de";
          modelDescription = modelDescription_SEIR_de;
          initialValues = initialValues_SEIR_de;
          modelFunction = modelFunction_SEIR_de;
@@ -535,7 +534,7 @@ int main(int argc, char *const argv[])
                            // write the column header with formular symbols and units.
                            // - the formular symbol of time is 't', the unit symbol of day is 'd'
                            // - the formular symbol of the number of cases is C without a unit
-                           // - the formular symbol of the siumulated model is deduced from the model's name
+                           // - the formular symbol of the simulated model is deduced from the model's name
                            fprintf(tsv, "t/d\tC");
                            for (k = 0; model[k]; k++)
                               fprintf(tsv, "\t%c", model[k]);
