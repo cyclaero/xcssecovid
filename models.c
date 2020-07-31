@@ -333,9 +333,9 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool
 char *modelDescription_SEIR_de =
 "# Model: SEIR Differential Equations\n"\
 "# || f = 1,  c = 0\n"\
-"# || f = 9   if 143 <= t and t <= 147    -- Gütersloh/Göttingen\n"\
-"# || f = 6   if 173 <= t and t <= 177    -- Vechta, Mettmann, ...\n"\
-"# || c = 200 if 161 <= t and t <= 193    -- Vacation & Outdoor\n"
+"# || f = 9   if 144 <= t and t <= 147    -- Gütersloh/Göttingen\n"\
+"# || f = 3   if 173 <= t and t <= 193    -- Vechta, Mettmann, Dingolfing-Landau, ...\n"\
+"# || c = 150 if 161 <= t and t <= 193    -- Vacation & Outdoor\n"
 "# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0 + c || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  f·a0/a1·y0·y2 - a3·y1     || y1(a7) = a2 <- a6/a4/a3\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2             || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
@@ -343,10 +343,10 @@ char *modelDescription_SEIR_de =
 
 int initialValues_SEIR_de(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
 {
-   if (isnan(A[0])) A[0] =  0.5L;                     // beta  - infection rate
+   if (isnan(A[0])) A[0] =  0.7L;                     // beta  - infection rate
    if (isnan(A[1])) A[1] =  max;                      // VSP   - Virtual Susceptible Population
-   if (isnan(A[3])) A[3] =  0.4L;                     // sigma - incubation rate  (2.5 d (latency) until an infected individual becomes infectious)
-   if (isnan(A[4])) A[4] =  0.0625L;                  // gamma - removal rate (more 16 d until the infectious individual can be removed from the chain of infection)
+   if (isnan(A[3])) A[3] =  0.25L;                    // sigma - incubation rate  (4 d (latency) until an infected individual becomes infectious)
+   if (isnan(A[4])) A[4] =  0.09L;                    // gamma - removal rate (more 11 d until the infectious individual can be removed from the chain of infection)
    if (isnan(A[6])) A[6] =  min;                      // R(t1) boundary value at t1
    if (isnan(A[7])) A[7] =  t1;
    if (isnan(A[8])) A[8] =  0.0L;                     // d·TP  - diffusion constant x Total Population, for example 0.05*80e6 = 4000000
@@ -367,13 +367,13 @@ static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
 {
    ldouble f = 1.0L, c = 0.0L;                        // f is an acceleration factor which may serve to model local outbreaks
                                                       // 1 = no acceleration
-   if (143.0L <= t && t <= 147.0L)
+   if (144.0L <= t && t <= 147.0L)
       f = 9.0L;                                       // Gütersloh/Göttingen
-   else if (173.0L <= t && t <= 177.0L)
-      f = 6.0L;                                       // Vechta, Mettmann, ...
+   else if (173.0L <= t && t <= 193.0L)
+      f = 3L;                                         // Vechta, Mettmann, Dingolfing-Landau, ...
 
    if (161.0L <= t && t <= 193.0L)                    // c is a constant summand to the virtual susceptibles and may serve for modeling behavioural changes
-      c = 200.0L;                                     // Vacation & Outdoor in July 2020
+      c = 150.0L;                                     // Vacation & Outdoor in July 2020
 
    dY[0] = -f*A[0]/A[1]*Y[0]*Y[2] + A[8]/Y[0] + c;    // dS/dt
    dY[1] =  f*A[0]/A[1]*Y[0]*Y[2] - A[3]*Y[1];        // dE/dt
