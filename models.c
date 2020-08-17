@@ -334,8 +334,10 @@ char *modelDescription_SEIR_de =
 "# Model: SEIR Differential Equations\n"\
 "# || f = 1,  c = 0\n"\
 "# || f = 9   if 144 <= t and t <= 147    -- Gütersloh/Göttingen\n"\
-"# || f = 3   if 173 <= t and t <= 193    -- Vechta, Mettmann, Dingolfing-Landau, ...\n"\
-"# || c = 150 if 161 <= t and t <= 193    -- Vacation & Outdoor\n"
+"# || f = 6   if 173 <= t and t <= 177    -- Vechta, Mettmann, ...\n"\
+"# || f = 5   if 189 <= t and t <= 208    -- ... Mamming, ...\n"\
+"# || c = 300 if 161 <= t and t <= 208    -- Vacation & Outdoor in July 2020\n"
+"# || c = 600 if 194 <= t                 -- Back to school in August/September 2020\n"
 "# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0 + c || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  f·a0/a1·y0·y2 - a3·y1     || y1(a7) = a2 <- a6/a4/a3\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2             || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
@@ -369,11 +371,15 @@ static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
                                                       // 1 = no acceleration
    if (144.0L <= t && t <= 147.0L)
       f = 9.0L;                                       // Gütersloh/Göttingen
-   else if (173.0L <= t && t <= 193.0L)
-      f = 3L;                                         // Vechta, Mettmann, Dingolfing-Landau, ...
+   else if (173.0L <= t && t <= 177.0L)
+      f = 6.0L;                                       // Vechta, Mettmann, ...
+   else if (189.0L <= t && t <= 208.0L)
+      f = 5.0L;                                       // ... Mamming, ...
 
-   if (161.0L <= t && t <= 193.0L)                    // c is a constant summand to the virtual susceptibles and may serve for modeling behavioural changes
-      c = 150.0L;                                     // Vacation & Outdoor in July 2020
+   if (161.0L <= t && t <= 208.0L)                    // c is a constant summand to the virtual susceptibles and may serve for modeling behavioural changes
+      c = 300.0L;                                     // Vacation & Outdoor in July 2020
+   else if (209.0 <= t)
+      c = 600.0L;                                     // Back to school in August 2020
 
    dY[0] = -f*A[0]/A[1]*Y[0]*Y[2] + A[8]/Y[0] + c;    // dS/dt
    dY[1] =  f*A[0]/A[1]*Y[0]*Y[2] - A[3]*Y[1];        // dE/dt
