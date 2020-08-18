@@ -342,13 +342,22 @@ int main(int argc, char *const argv[])
 
    if (*country)
    {
-      if (*(uint32_t *)model   == *(uint32_t *)"SEIR" && model[4] == '\0'
-       && *(uint64_t *)country == *(uint64_t *)"Germany")
-      {
-         modelDescription = modelDescription_SEIR_de;
-         initialValues = initialValues_SEIR_de;
-         modelFunction = modelFunction_SEIR_de;
-      }
+      if (*(uint32_t *)model   == *(uint32_t *)"SEIR" && model[4] == '\0')
+         if (*(uint64_t *)country == *(uint64_t *)"Germany")
+         {
+            modelDescription = modelDescription_SEIR_de;
+            initialValues = initialValues_SEIR_de;
+            modelFunction = modelFunction_SEIR_de;
+         }
+
+         else if (country[6] == '\0'
+               && *(uint16_t *)(country+4) == *(uint16_t *)"il"
+               && *(uint32_t *)country     == *(uint32_t *)"Bras")
+         {
+            modelDescription = modelDescription_SEIR_br;
+            initialValues = initialValues_SEIR_br;
+            modelFunction = modelFunction_SEIR_br;
+         }
 
       if (csv = (*(uint16_t *)argv[optind+1] == *(uint16_t *)"-")
                 ? stdin
