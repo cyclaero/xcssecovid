@@ -335,7 +335,7 @@ char *modelDescription_SEIR_de =
 "# || f = 1,  c = 0\n"\
 "# || f = 9   if 144 <= t and t <= 147    -- Gütersloh/Göttingen\n"\
 "# || f = 6   if 173 <= t and t <= 177    -- Vechta, Mettmann, ...\n"\
-"# || f = 5   if 189 <= t and t <= 208    -- ... Mamming, ...\n"\
+"# || f = 5   if 189 <= t and t <= 215    -- ... Mamming, ...\n"\
 "# || c = 250 if 161 <= t and t <= 208    -- Vacation & Outdoor in July 2020\n"
 "# || c = 500 if 209 <= t                 -- Back to school in August/September 2020\n"
 "# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0 + c || y0(a7) = a1-a2-a5-a6\n"\
@@ -373,7 +373,7 @@ static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
       f = 9.0L;                                       // Gütersloh/Göttingen
    else if (173.0L <= t && t <= 177.0L)
       f = 6.0L;                                       // Vechta, Mettmann, ...
-   else if (189.0L <= t && t <= 208.0L)
+   else if (189.0L <= t && t <= 215.0L)
       f = 5.0L;                                       // ... Mamming, ...
 
    if (161.0L <= t && t <= 208.0L)                    // c is a constant summand to the virtual susceptibles and may serve for modeling behavioural changes
