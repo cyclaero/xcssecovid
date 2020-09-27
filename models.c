@@ -332,13 +332,14 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool
 
 char *modelDescription_SEIR_de =
 "# Model: SEIR Differential Equations\n"\
-"# || f = 1,  c = 0\n"\
-"# || f = 9   if 144 <= t and t <= 147    -- Gütersloh/Göttingen\n"\
-"# || f = 6   if 173 <= t and t <= 177    -- Vechta, Mettmann, ...\n"\
-"# || f = 5   if 189 <= t and t <= 208    -- ... Mamming, ...\n"\
-"# || f = 3   if 209 <= t and t <= 245    -- ... Parties/Coronades, ...\n"\
-"# || c = 250 if 161 <= t and t <= 208    -- Vacation & Outdoor in July 2020\n"
-"# || c = 500 if 209 <= t                 -- Back to school in August/September 2020\n"
+"# || f = 1, c = 0\n"\
+"# || f =    9 if 144 <= t and t <= 147   -- Gütersloh/Göttingen\n"\
+"# || f =    6 if 173 <= t and t <= 177   -- Vechta, Mettmann, ...\n"\
+"# || f =    5 if 189 <= t and t <= 208   -- ... Mamming, ...\n"\
+"# || f =    3 if 209 <= t and t <= 245   -- ... Parties/Coronades, ...\n"\
+"# || c =  250 if 161 <= t and t <= 208   -- Vacation & Outdoor in July 2020\n"
+"# || c =  500 if 209 <= t and t <= 229   -- Back to school in August 2020\n"
+"# || c = 2000 if 230 <= t                -- Back to school in September 2020\n"
 "# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0 + c || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  f·a0/a1·y0·y2 - a3·y1     || y1(a7) = a2 <- a6/a4/a3\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2             || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
@@ -380,9 +381,11 @@ static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
       f = 3.0L;                                       // ... Parties/Coronades, ...
 
    if (161.0L <= t && t <= 208.0L)                    // c is a constant summand to the virtual susceptibles and may serve for modeling behavioural changes
-      c = 250.0L;                                     // Vacation & Outdoor in July 2020
-   else if (209.0 <= t)
-      c = 500.0L;                                     // Back to school in August/September 2020
+      c =  250.0L;                                    // Vacation & Outdoor in July 2020
+   else if (209.0L <= t && t <= 229.0L)
+      c =  500.0L;                                    // Back to school in August 2020
+   else if (230.0L <= t)
+      c = 2000.0L;                                    // Back to school in September 2020
 
    dY[0] = -f*A[0]/A[1]*Y[0]*Y[2] + A[8]/Y[0] + c;    // dS/dt
    dY[1] =  f*A[0]/A[1]*Y[0]*Y[2] - A[3]*Y[1];        // dE/dt
