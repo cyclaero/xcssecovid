@@ -339,7 +339,7 @@ char *modelDescription_SEIR_de =
 "# || f =    3 if 209 <= t and t <= 245   -- ... Parties/Coronades, ...\n"\
 "# || c =  250 if 161 <= t and t <= 208   -- Vacation & Outdoor in July 2020\n"
 "# || c =  500 if 209 <= t and t <= 229   -- Back to school in August 2020\n"
-"# || c = 2000 if 230 <= t                -- Back to school in September 2020\n"
+"# || c = 2400 if 230 <= t                -- Back to school in September 2020\n"
 "# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0 + c || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  f·a0/a1·y0·y2 - a3·y1     || y1(a7) = a2 <- a6/a4/a3\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2             || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
