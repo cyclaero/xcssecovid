@@ -348,7 +348,7 @@ char *modelDescription_SEIR_de =
 int initialValues_SEIR_de(ldouble t1, ldouble min, ldouble max, ldouble A[mpar], int f[mpar])
 {
    if (isnan(A[0])) A[0] =  0.7L;                     // beta  - infection rate
-   if (isnan(A[1])) A[1] =  max;                      // VSP   - Virtual Susceptible Population
+   if (isnan(A[1])) A[1] =  160000.0L;                   // VSP   - Virtual Susceptible Population
    if (isnan(A[3])) A[3] =  0.25L;                    // sigma - incubation rate  (4 d (latency) until an infected individual becomes infectious)
    if (isnan(A[4])) A[4] =  0.09L;                    // gamma - removal rate (more 11 d until the infectious individual can be removed from the chain of infection)
    if (isnan(A[6])) A[6] =  min;                      // R(t1) boundary value at t1
@@ -385,7 +385,7 @@ static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    else if (209.0L <= t && t <= 229.0L)
       c =  500.0L;                                    // Back to school in August 2020
    else if (230.0L <= t)
-      c = 2000.0L;                                    // Back to school in September 2020
+      c = 2400.0L;                                    // Back to school in September 2020
 
    dY[0] = -f*A[0]/A[1]*Y[0]*Y[2] + A[8]/Y[0] + c;    // dS/dt
    dY[1] =  f*A[0]/A[1]*Y[0]*Y[2] - A[3]*Y[1];        // dE/dt
