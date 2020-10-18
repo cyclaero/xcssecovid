@@ -336,11 +336,11 @@ char *modelDescription_SEIR_de =
 "# || f =     9 if 144 <= t and t <= 147   -- Gütersloh/Göttingen\n"\
 "# || f =     6 if 173 <= t and t <= 177   -- Vechta, Mettmann, ...\n"\
 "# || f =     5 if 189 <= t and t <= 208   -- ... Mamming, ...\n"\
-"# || f =     3 if 209 <= t and t <= 249   -- ... Parties/Coronades, ...\n"\
+"# || f =   2.5 if 209 <= t and t <= 253   -- ... Parties/Coronades, ...\n"\
 "# || c =   250 if 161 <= t and t <= 208   -- Vacation & Outdoor in July 2020\n"
 "# || c =   500 if 209 <= t and t <= 229   -- Back to school in August 2020\n"
-"# || c =  2500 if 230 <= t and t <= 251   -- Back to school in September 2020\n"
-"# || c = 12000 if 252 <= t and t <= 274   -- Begin of a damp and cold season\n"
+"# || c =  2500 if 230 <= t and t <= 253   -- Back to school in September 2020\n"
+"# || c = 12000 if 254 <= t and t <= 274   -- Begin of a damp and cold season\n"
 "# || c =  3000 if 275 <= t                -- Winter time\n"
 "# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0 + c || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  f·a0/a1·y0·y2 - a3·y1     || y1(a7) = a2 <- a6/a4/a3\n"\
@@ -379,16 +379,16 @@ static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
       f = 6.0L;                                       // Vechta, Mettmann, ...
    else if (189.0L <= t && t <= 208.0L)
       f = 5.0L;                                       // ... Mamming, ...
-   else if (209.0L <= t && t <= 249.0L)
-      f = 3.0L;                                       // ... Parties/Coronades, ...
+   else if (209.0L <= t && t <= 253.0L)
+      f = 2.5L;                                       // ... Parties/Coronades, ...
 
    if (161.0L <= t && t <= 208.0L)                    // c is a constant summand to the virtual susceptibles and may serve for modeling behavioural and seasonal changes
       c =   250.0L;                                   // Vacation & Outdoor in July 2020
    else if (209.0L <= t && t <= 229.0L)
       c =   500.0L;                                   // Back to school in August 2020
-   else if (230.0L <= t && t <= 251.0L)
+   else if (230.0L <= t && t <= 253.0L)
       c =  2500.0L;                                   // Back to school in September 2020
-   else if (252.0L <= t && t <= 274.0L)
+   else if (254.0L <= t && t <= 274.0L)
       c = 12000.0L;                                   // Begin of a damp and cold season
    else if (275.0L <= t)
       c =  3000.0L;                                   // Winter time
