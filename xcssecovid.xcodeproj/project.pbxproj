@@ -32,6 +32,7 @@
 		7E363D0824291B15007AE640 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		7E53ED7F21B1A83000B22251 /* xcssecovid */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xcssecovid; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E53ED8221B1A83000B22251 /* xcssecovid.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xcssecovid.c; sourceTree = "<group>"; };
+		7E66FE072548E64D000C18DD /* codeql-analysis.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = "codeql-analysis.yml"; path = ".github/workflows/codeql-analysis.yml"; sourceTree = "<group>"; };
 		7EF4D90F242EBE7300A5CCD1 /* models.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = models.c; sourceTree = "<group>"; };
 		7EF4D910242EBE7300A5CCD1 /* models.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = models.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -58,6 +59,7 @@
 				7E363D0724291B15007AE640 /* README.md */,
 				7E363D0824291B15007AE640 /* LICENSE */,
 				7E363D0624291B15007AE640 /* .gitignore */,
+				7E66FE072548E64D000C18DD /* codeql-analysis.yml */,
 				7E53ED8021B1A83000B22251 /* Products */,
 			);
 			sourceTree = "<group>";
