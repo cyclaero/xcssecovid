@@ -333,15 +333,16 @@ int modelFunction_SEIR(ldouble t, ldouble *Y, ldouble A[mpar], int f[mpar], bool
 char *modelDescription_SEIR_de =
 "# Model: SEIR Differential Equations\n"\
 "# || f = 1, c = 0\n"\
-"# || f =     9 if 144 <= t and t <= 147   -- Gütersloh/Göttingen\n"\
-"# || f =     6 if 173 <= t and t <= 177   -- Vechta, Mettmann, ...\n"\
-"# || f =     5 if 189 <= t and t <= 208   -- ... Mamming, ...\n"\
-"# || f =   2.5 if 209 <= t and t <= 253   -- ... Parties/Coronades, ...\n"\
-"# || c =   250 if 161 <= t and t <= 208   -- Vacation & Outdoor in July 2020\n"
-"# || c =   500 if 209 <= t and t <= 229   -- Back to school in August 2020\n"
-"# || c =  2500 if 230 <= t and t <= 253   -- Back to school in September 2020\n"
-"# || c = 12000 if 254 <= t and t <= 274   -- Begin of a damp and cold season\n"
-"# || c =  3000 if 275 <= t                -- Winter time\n"
+"# || f =     9 if 143 < t and t <= 147   -- Gütersloh/Göttingen\n"\
+"# || f =     6 if 172 < t and t <= 177   -- Vechta, Mettmann, ...\n"\
+"# || f =     5 if 188 < t and t <= 208   -- ... Mamming, ...\n"\
+"# || f =     3 if 208 < t and t <= 251   -- ... Parties/Coronades, ...\n"\
+"# || c =   250 if 160 < t and t <= 208   -- Vacation & Outdoor in July 2020\n"
+"# || c =   500 if 209 < t and t <= 230   -- Back to school in August 2020\n"
+"# || c =  2000 if 230 < t and t <= 251   -- Back to school in September 2020\n"
+"# || c = 12000 if 251 < t and t <= 271   -- Begin of a damp and cold season\n"
+"# || c = 24000 if 271 < t and t <= 300   -- Manifestation of a damp and cold season\n"
+"# || c = 12000 if 300 < t                -- Winter time\n"
 "# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0 + c || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  f·a0/a1·y0·y2 - a3·y1     || y1(a7) = a2 <- a6/a4/a3\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2             || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
@@ -373,25 +374,27 @@ static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
 {
    ldouble f = 1.0L, c = 0.0L;                        // f is an acceleration factor which may serve to model local outbreaks
                                                       // 1 = no acceleration
-   if (144.0L <= t && t <= 147.0L)
+   if (143.0L < t && t <= 147.0L)
       f = 9.0L;                                       // Gütersloh/Göttingen
-   else if (173.0L <= t && t <= 177.0L)
+   else if (172.0L < t && t <= 177.0L)
       f = 6.0L;                                       // Vechta, Mettmann, ...
-   else if (189.0L <= t && t <= 208.0L)
+   else if (188.0L < t && t <= 208.0L)
       f = 5.0L;                                       // ... Mamming, ...
-   else if (209.0L <= t && t <= 253.0L)
-      f = 2.5L;                                       // ... Parties/Coronades, ...
+   else if (208.0L < t && t <= 251.0L)
+      f = 3.0L;                                       // ... Parties/Coronades, ...
 
-   if (161.0L <= t && t <= 208.0L)                    // c is a constant summand to the virtual susceptibles and may serve for modeling behavioural and seasonal changes
+   if (160.0L < t && t <= 208.0L)                     // c is a constant summand to the virtual susceptibles and may serve for modeling behavioural and seasonal changes
       c =   250.0L;                                   // Vacation & Outdoor in July 2020
-   else if (209.0L <= t && t <= 229.0L)
+   else if (208.0L < t && t <= 230.0L)
       c =   500.0L;                                   // Back to school in August 2020
-   else if (230.0L <= t && t <= 253.0L)
-      c =  2500.0L;                                   // Back to school in September 2020
-   else if (254.0L <= t && t <= 274.0L)
+   else if (230.0L < t && t <= 251.0L)
+      c =  2000.0L;                                   // Back to school in September 2020
+   else if (251.0L < t && t <= 271.0L)
       c = 12000.0L;                                   // Begin of a damp and cold season
-   else if (275.0L <= t)
-      c =  3000.0L;                                   // Winter time
+   else if (271.0L < t && t <= 300.0L)
+      c = 24000.0L;                                   // Manifestation of a damp and cold season
+   else if (300.0L < t)
+      c = 12000.0L;                                   // Winter time
 
    dY[0] = -f*A[0]/A[1]*Y[0]*Y[2] + A[8]/Y[0] + c;    // dS/dt
    dY[1] =  f*A[0]/A[1]*Y[0]*Y[2] - A[3]*Y[1];        // dE/dt
