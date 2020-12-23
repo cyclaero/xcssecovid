@@ -340,9 +340,10 @@ char *modelDescription_SEIR_de =
 "# || c =   250 if 160 < t and t <= 208   -- Vacation & Outdoor in July 2020\n"
 "# || c =   500 if 209 < t and t <= 230   -- Back to school in August 2020\n"
 "# || c =  2000 if 230 < t and t <= 251   -- Back to school in September 2020\n"
-"# || c = 12000 if 251 < t and t <= 271   -- Begin of a damp and cold season\n"
-"# || c = 24000 if 271 < t and t <= 300   -- Manifestation of a damp and cold season\n"
-"# || c = 12000 if 300 < t                -- Winter time\n"
+"# || c = 10500 if 251 < t and t <= 271   -- Begin of a damp and cold season\n"
+"# || c = 23000 if 271 < t and t <= 289   -- Manifestation of a damp and cold season\n"
+"# || c = 13000 if 289 < t and t <= 307   -- Lock down light\n"
+"# || c = 27000 if 307 < t                -- Winter time\n"
 "# S  dy0/dt = -f·a0/a1·y0·y2 + a8/y0 + c || y0(a7) = a1-a2-a5-a6\n"\
 "# E  dy1/dt =  f·a0/a1·y0·y2 - a3·y1     || y1(a7) = a2 <- a6/a4/a3\n"\
 "# I  dy2/dt =  a3·y1 - a4·y2             || y2(a7) = a5 <- (1 - a4)·a3·a2\n"\
@@ -390,11 +391,13 @@ static void seirdes_de(ldouble t, ldouble *Y, ldouble *dY, ldouble A[mpar])
    else if (230.0L < t && t <= 251.0L)
       c =  2000.0L;                                   // Back to school in September 2020
    else if (251.0L < t && t <= 271.0L)
-      c = 12000.0L;                                   // Begin of a damp and cold season
-   else if (271.0L < t && t <= 300.0L)
-      c = 24000.0L;                                   // Manifestation of a damp and cold season
-   else if (300.0L < t)
-      c = 12000.0L;                                   // Winter time
+      c = 10500.0L;                                   // Begin of a damp and cold season
+   else if (271.0L < t && t <= 289.0L)
+      c = 23000.0L;                                   // Manifestation of a damp and cold season
+   else if (289.0L < t && t <= 307.0L)
+      c = 13000.0L;                                   // Lock down light
+   else if (307.0L < t)
+      c = 27000.0L;                                   // Winter time
 
    dY[0] = -f*A[0]/A[1]*Y[0]*Y[2] + A[8]/Y[0] + c;    // dS/dt
    dY[1] =  f*A[0]/A[1]*Y[0]*Y[2] - A[3]*Y[1];        // dE/dt
