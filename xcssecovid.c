@@ -130,7 +130,8 @@ static inline size_t collen(const char *col)
    return l;
 }
 
-#define ndays 366    // 2020 is a leap year - t[0] = 2020-01-01; t[365] = 2020-12-31
+#define ndays 731    // 2020 is a leap year - t[  0] = 2020-01-01; t[365] = 2020-12-31
+                     //                       t[366] = 2021-01-01; t[730] = 2021-12-31
 
 int main(int argc, char *const argv[])
 {
